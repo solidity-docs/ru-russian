@@ -1,18 +1,18 @@
 ###############################
-Introduction to Smart Contracts
+Введение в смарт-контракты
 ###############################
 
 .. _simple-smart-contract:
 
 ***********************
-A Simple Smart Contract
+Простой смарт-контракт
 ***********************
 
-Let us begin with a basic example that sets the value of a variable and exposes
-it for other contracts to access. It is fine if you do not understand
-everything right now, we will go into more details later.
+Позвольте нам начать с простого примера, в котором мы присваиваем значение переменной и
+предоставляем к ней доступ для других контрактов. Ничего страшного, если вам что-то
+будет непонятьно в этом примере, мы разберем детали позднее. 
 
-Storage Example
+Пример создания контракта с общедоступной переменной.
 ===============
 
 .. code-block:: solidity
@@ -30,31 +30,41 @@ Storage Example
         function get() public view returns (uint) {
             return storedData;
         }
-    }
+    
 
-The first line tells you that the source code is licensed under the
-GPL version 3.0. Machine-readable license specifiers are important
-in a setting where publishing the source code is the default.
 
-The next line specifies that the source code is written for
-Solidity version 0.4.16, or a newer version of the language up to, but not including version 0.9.0.
-This is to ensure that the contract is not compilable with a new (breaking) compiler version, where it could behave differently.
+В первой строке указано, что исходный код предоставляется по лицензии
+GPL версии 3.0 Важно указывать спецификатор лицензии в машинно-читаемом формате
+в случаях, когда планируется сделать написанный код публично доступным.
+
+Следующая строка указывает, что данный код написан для языка Солидити версии 0.4.16,
+или более новой, за ислючением версий выше 0.9.0. 
+
+Это сделано, чтобы акцентировать внимание на том, что данный контракт не совместим с новой(фундаментально отличающейся) 
+версией компилятора, в котором данный код может вести себя по другому.
+
 :ref:`Pragmas<pragma>` are common instructions for compilers about how to treat the
 source code (e.g. `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
 
-A contract in the sense of Solidity is a collection of code (its *functions*) and
-data (its *state*) that resides at a specific address on the Ethereum
-blockchain. The line ``uint storedData;`` declares a state variable called ``storedData`` of
-type ``uint`` (*u*\nsigned *int*\eger of *256* bits). You can think of it as a single slot
-in a database that you can query and alter by calling functions of the
-code that manages the database. In this example, the contract defines the
-functions ``set`` and ``get`` that can be used to modify
-or retrieve the value of the variable.
+:Примечание:`Pragmas<pragma>` широко используемая инструкция для компиляторов, 
+указывающая каким образом следует интерпретировать исходный код (подробнее `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
 
-To access a member (like a state variable) of the current contract, you do not typically add the ``this.`` prefix,
-you just access it directly via its name.
-Unlike in some other languages, omitting it is not just a matter of style,
-it results in a completely different way to access the member, but more on this later.
+Контракт(смарт-контракт) с позиции языка Солидити - это массив кода(его *функции*) и
+данные(его *состояния*), которые размещены по определенному адресу в блокчейне Эфириума.
+Строка ``uint storedData`` объявляет состояние переменной ``storedData`` типа ``uint``
+(*u*\nsigned - беззнаковое, *int*\eger -  число, *256* битное). Вы можете рассматривать этот тип
+данных, как одну ячейку базы данных, которую вы можете запрашивать и изменять с помощью вызова
+функций программного кода, который управляет базой данных. В этом примере, контракт
+объявляет функции ``set`` и ``get``, которые могу быть использованы для изменения
+и запроса значения переменной.
+
+Для получения доступа к элементу(например, к переменной состояния) данного контракта, вам не нужно,
+как обычно добавлять префикс ``this``, вы просто обращаетесь к нему напрямую через его имя. В отличии от
+некоторых других языков программирования, исключение префикса не является особенностью стиля, а приводит
+к принципиально другому подходу в реализации доступа к элементам, но подробнее об этом позже.
+
+Этот контракт ничего не делает, лишь позволяет кому бы то ни было хранить едиственное число, к которому
+может получить доступ любой желающий, и исключает возможность уклониться от его публичного опубликования.
 
 This contract does not do much yet apart from (due to the infrastructure
 built by Ethereum) allowing anyone to store a single number that is accessible by
