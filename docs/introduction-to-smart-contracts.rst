@@ -15,7 +15,7 @@
 Пример создания контракта с общедоступной переменной.
 ===============
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity >=0.4.16 <0.9.0;
@@ -43,9 +43,6 @@ GPL версии 3.0 Важно указывать спецификатор ли
 Это сделано, чтобы акцентировать внимание на том, что данный контракт не совместим с новой(фундаментально отличающейся) 
 версией компилятора, в котором данный код может вести себя по другому.
 
-:ref:`Pragmas<pragma>` are common instructions for compilers about how to treat the
-source code (e.g. `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
-
 :Примечание:`Pragmas<pragma>` широко используемая инструкция для компиляторов, 
 указывающая каким образом следует интерпретировать исходный код (подробнее `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
 
@@ -63,70 +60,66 @@ source code (e.g. `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
 некоторых других языков программирования, исключение префикса не является особенностью стиля, а приводит
 к принципиально другому подходу в реализации доступа к элементам, но подробнее об этом позже.
 
-Этот контракт ничего не делает, лишь позволяет кому бы то ни было хранить едиственное число, к которому
-может получить доступ любой желающий, и исключает возможность уклониться от его публичного опубликования.
+Этот контракт ничего не делает, лишь(благодаря принципам работый инфраструктуры Эфириума) позволяет кому бы то ни было 
+хранить едиственное число, к которому может получить доступ любой желающий, 
+и исключает(какую-либо практическую) возможность уклониться от его публикации в открытый доступ.
+Любой может вызвать функцию ''set'' снова и присвоить переменной другое значение, переписав ваше число,
+но оно все равно будет сохранено в истории блокчейна. Позже, вы увидите, как можно наложить ограничения доступа
+к функции таким образом, что только вы будете иметь право изменять это число.
 
-This contract does not do much yet apart from (due to the infrastructure
-built by Ethereum) allowing anyone to store a single number that is accessible by
-anyone in the world without a (feasible) way to prevent you from publishing
-this number. Anyone could call ``set`` again with a different value
-and overwrite your number, but the number is still stored in the history
-of the blockchain. Later, you will see how you can impose access restrictions
-so that only you can alter the number.
+.. Внимание::
+    Будьте аккуратны с использованием текста в Unicode кодировке, так как одинаково выглядящие
+    (или даже полностью одинаковые) символы могут иметь разный код в интерпретации Unicode и
+    из-за этого шифруются как совершенно не идентичные байтовые массивы.
+    
+.. Замечание::
+    Все идентификаторы(названия контрактов, имена функций и переменных) должны строго использовать
+    систему кодирования ASCII. Также возможно хранить данные в переменных типа строка с использованием
+    кодировки UTF-8. 
+    
+.. содержание:: ! Производная валюта(Сабкарренси)
 
-.. warning::
-    Be careful with using Unicode text, as similar looking (or even identical) characters can
-    have different code points and as such are encoded as a different byte array.
-
-.. note::
-    All identifiers (contract names, function names and variable names) are restricted to
-    the ASCII character set. It is possible to store UTF-8 encoded data in string variables.
-
-.. index:: ! subcurrency
-
-Subcurrency Example
+Пример производной криптовалюты
 ===================
 
-The following contract implements the simplest form of a
-cryptocurrency. The contract allows only its creator to create new coins (different issuance schemes are possible).
-Anyone can send coins to each other without a need for
-registering with a username and password, all you need is an Ethereum keypair.
+Следующий контракт представляет из себя простейшую форму криптовалюты.
+Контракт позволяет создавать новые монеты только создателю контракта(схема создания может быть самая разнообразная).
+Любой может отправить монеты кому угодно без необходимости регистрации с помощью имени пользователя и пароля,
+все что вам нужно это пара ключей Эфириума.
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity ^0.8.4;
 
     contract Coin {
-        // The keyword "public" makes variables
-        // accessible from other contracts
+        // Ключевое слово "public" окрывает к переменной публичный
+        // доступ из других контрактов
         address public minter;
         mapping (address => uint) public balances;
 
-        // Events allow clients to react to specific
-        // contract changes you declare
+        // Событие(Event) позволяет клиентам реагировать на определенные,
+        // объявленные вами, изменения в контракте
         event Sent(address from, address to, uint amount);
 
-        // Constructor code is only run when the contract
-        // is created
+        // Код Constructor выполняется только в момент создания контракта
         constructor() {
             minter = msg.sender;
         }
 
-        // Sends an amount of newly created coins to an address
-        // Can only be called by the contract creator
+        // Даная функция отправляет количество, определенное в переменной amount, вновь созданых монет на определеный адрес
+        // Может быть вызвана только создателем контракта
         function mint(address receiver, uint amount) public {
             require(msg.sender == minter);
             balances[receiver] += amount;
         }
 
-        // Errors allow you to provide information about
-        // why an operation failed. They are returned
-        // to the caller of the function.
+        // Обработчики ошибок позволяют вам вывести пользователю информацию
+        // о причинах провала операции. Ответ возвращается к тому, кто вызвал функцию.
         error InsufficientBalance(uint requested, uint available);
 
-        // Sends an amount of existing coins
-        // from any caller to an address
+        // Отправляет определенное в переменной amount количество существующих монет
+        // с кошелька того, кто вызвал эту функцию на любой другой адрес.
         function send(address receiver, uint amount) public {
             if (amount > balances[msg.sender])
                 revert InsufficientBalance({
@@ -140,49 +133,54 @@ registering with a username and password, all you need is an Ethereum keypair.
         }
     }
 
-This contract introduces some new concepts, let us go through them one by one.
+В этом контракте есть некоторые новые концепции, давайте рассмотрим их одну за другой.
 
-The line ``address public minter;`` declares a state variable of type :ref:`address<address>`.
-The ``address`` type is a 160-bit value that does not allow any arithmetic operations.
-It is suitable for storing addresses of contracts, or a hash of the public half
-of a keypair belonging to :ref:`external accounts<accounts>`.
+Строка ''address public minter;'' объявляет постоянную переменную типа адрес 'address<address>'.
+Тип ``address``(адрес) представляет собой 160-битное значение, с которым запрещено проводить какие-либо 
+арифметические операции. Эта переменная подходит для хранения адресов контрактов или хэш значений публичной
+части пары ключей от каких-либо внешних аккаунтов.
 
-The keyword ``public`` automatically generates a function that allows you to access the current value of the state
-variable from outside of the contract. Without this keyword, other contracts have no way to access the variable.
-The code of the function generated by the compiler is equivalent
-to the following (ignore ``external`` and ``view`` for now):
+Ключевое слово ''public''(публичный) автоматически генерирует функцию, которая позволяет вам получать доступ
+к текущему значению постоянной переменной запросами из-за пределов контракта. Без этого ключевого слова, другие
+контракты не смогут получить доступ к этой переменной. Код функции, сгенерированный компилятором, представляет нечто подобное:
+(пока что не обращайте внимание на ``external`` и ``view``)
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     function minter() external view returns (address) { return minter; }
 
 You could add a function like the above yourself, but you would have a function and state variable with the same name.
 You do not need to do this, the compiler figures it out for you.
 
-.. index:: mapping
+Вы можете самостоятельно добавить в контракт подобную функцию, но в итое вы получите функцию и постоянную переменную с
+таким же именем. Вам не нужно этого делать, комрилятор сделает это за вас.
 
-The next line, ``mapping (address => uint) public balances;`` also
-creates a public state variable, but it is a more complex datatype.
+.. содержание:: Мэппинг(Сопоставление)
+
+Следующая линия ``mapping (address => uint) public balances;`` также создает
+переменную публичного состояния, но это более сложный тип данных. 
+mapping <mapping-types> тип сопоставляет адреса к типу беззнаковое число `unsigned integers <integers>`
 The :ref:`mapping <mapping-types>` type maps addresses to :ref:`unsigned integers <integers>`.
 
-Mappings can be seen as `hash tables <https://en.wikipedia.org/wiki/Hash_table>`_ which are
-virtually initialised such that every possible key exists from the start and is mapped to a
-value whose byte-representation is all zeros. However, it is neither possible to obtain a list of all keys of
-a mapping, nor a list of all values. Record what you
-added to the mapping, or use it in a context where this is not needed. Or
-even better, keep a list, or use a more suitable data type.
+Мэппинг может рассматриваться как Хэш таблицы <https://en.wikipedia.org/wiki/Hash_table>, которые
+виртуально инициализированны таким образом, что каждый возможный ключ существует с самого начала
+и мэппирован к значению, чье байтовое представление будет состоять из одних нулей(0). Однако,
+это невозможно, получить список всех ключей мэппирования, как и список всех значений. Запишите, то что
+вы добавили к мэппингу или используйте этот тип в контексте, где знание списка значений мэппинга не является
+необходимым. Или даже лучше, сохраните список или используйте более подходящий тип данных.
 
-The :ref:`getter function<getter-functions>` created by the ``public`` keyword
-is more complex in the case of a mapping. It looks like the
-following:
+Функция getter (Отсылка `getter function<getter-functions>`) создается ключевым словом ``public``
+и является более сложным случаем мэппинга. Выглядит это примерно так:
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     function balances(address account) external view returns (uint) {
         return balances[account];
     }
 
-You can use this function to query the balance of a single account.
+
+Вы можете использовать эту функцию, чтобы получать баланс какого-либо одного аккаунта.
+
 
 .. index:: event
 
