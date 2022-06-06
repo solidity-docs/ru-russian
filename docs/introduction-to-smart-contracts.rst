@@ -182,19 +182,19 @@ The :ref:`mapping <mapping-types>` type maps addresses to :ref:`unsigned integer
 Вы можете использовать эту функцию, чтобы получать баланс какого-либо одного аккаунта.
 
 
-.. index:: event
+.. Содержание:: Событие(event)
+    
+Строка ``event Sent(address from, address to, uint amount);`` объявляет
+событие (event), которое выпускается в последней линии функции ``send``.
+Клиенты Эфириума, такие как веб-приложения, могут слушать такие события,
+выпускаемые в блокчейне за небольшую цену. Как только событие произошло,
+слушающее событие приложение получает аргументы ``from``(от кого), ``to``(кому) 
+and ``amount``(количество), с помощью которых можно отследить транзации.
 
-The line ``event Sent(address from, address to, uint amount);`` declares
-an :ref:`"event" <events>`, which is emitted in the last line of the function
-``send``. Ethereum clients such as web applications can
-listen for these events emitted on the blockchain without much
-cost. As soon as it is emitted, the listener receives the
-arguments ``from``, ``to`` and ``amount``, which makes it possible to track
-transactions.
-
-To listen for this event, you could use the following
-JavaScript code, which uses `web3.js <https://github.com/ethereum/web3.js/>`_ to create the ``Coin`` contract object,
-and any user interface calls the automatically generated ``balances`` function from above::
+Чтобы слушать это событие, вы можете использовать следующий код JavaScript,
+который использует библиотеку web3.js <https://github.com/ethereum/web3.js/>,
+чтобы создать объект контракта ``Coin``, и любой пользовательский интерфейс
+автоматически вызывающий сгенерированную  функцию ``balances`` указанную выше: 
 
     Coin.Sent().watch({}, '', function(error, result) {
         if (!error) {
@@ -207,26 +207,30 @@ and any user interface calls the automatically generated ``balances`` function f
         }
     })
 
-.. index:: coin
+.. Содержание:: Монета(coin)
 
-The :ref:`constructor<constructor>` is a special function that is executed during the creation of the contract and
-cannot be called afterwards. In this case, it permanently stores the address of the person creating the
-contract. The ``msg`` variable (together with ``tx`` and ``block``) is a
-:ref:`special global variable <special-variables-functions>` that
-contains properties which allow access to the blockchain. ``msg.sender`` is
-always the address where the current (external) function call came from.
+constructor - это специальная функция, которая выполняется во время создания контракта и после 
+этого уже не может быть вызвана. В этом случая, она навсегда сохраняет адрес создателя контракта.
+Переменная ``msg`` (вместе с ``tx`` и ``block``) является специальной глабальной переменной, которая
+содержит свойства, которые позволяют взаимодействовать с блокчейном. ``msg.sender`` это всегда адрес
+с которого вызывается текущая(внешняя) функция.
 
-The functions that make up the contract, and that users and contracts can call are ``mint`` and ``send``.
+Функция которая создает и устанавливает контракт, а также пользователь, которые это делает
+и сам контракт могут вызывать функции ``mint`` и ``send``.
 
-The ``mint`` function sends an amount of newly created coins to another address. The :ref:`require
-<assert-and-require>` function call defines conditions that reverts all changes if not met. In this
-example, ``require(msg.sender == minter);`` ensures that only the creator of the contract can call
-``mint``. In general, the creator can mint as many tokens as they like, but at some point, this will
-lead to a phenomenon called "overflow". Note that because of the default :ref:`Checked arithmetic
-<unchecked>`, the transaction would revert if the expression ``balances[receiver] += amount;``
-overflows, i.e., when ``balances[receiver] + amount`` in arbitrary precision arithmetic is larger
-than the maximum value of ``uint`` (``2**256 - 1``). This is also true for the statement
-``balances[receiver] += amount;`` in the function ``send``.
+Функция ``mint`` отправляет вновь созданные монеты на другой адрес. Метод функции require определяет
+условия для выполнения функции, и если условия не выполняются, то выполнение отменяется. В это примере,
+``require(msg.sender == minter);`` - эта строчка подразумевает, что только создатель контракта может
+вызывать функцию ``mint``. В основном, создатель может выпустить столько токенов, сколько он хочет,
+но с другой стороны это может привести к феномену, называемому "overflow"(переполнение). Обратите внимание,
+что из-за проверки арифметических соотношений транзакция может отмениться, если выражение
+``balances[receiver] += amount;``(баланс получателя = инкремент на определенное число) переполняет значение
+переменной, например, когда увеличение баланса кошелька получателя на произвольное точное число, приводит
+значение баланса кошелька к такому числу, которое превышеает максимально возможное значение в
+беззнаковом 256 битном числе минус 1. Такая ситуация также возмжона для строки ``balances[receiver] += amount;``
+в функции ``send``.
+
+
 
 :ref:`Errors <errors>` allow you to provide more information to the caller about
 why a condition or operation failed. Errors are used together with the
