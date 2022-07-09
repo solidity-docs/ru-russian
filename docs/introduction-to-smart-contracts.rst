@@ -277,112 +277,94 @@ constructor - это специальная функция, которая вы�
 или будет полностью принята. К тому же, пока ваша транзакция применяется для изменения базы
 данных, никакая другая транзакция не может на нее повлиять.
 
-A blockchain is a globally shared, transactional database.
-This means that everyone can read entries in the database just by participating in the network.
-If you want to change something in the database, you have to create a so-called transaction
-which has to be accepted by all others.
-The word transaction implies that the change you want to make (assume you want to change
-two values at the same time) is either not done at all or completely applied. Furthermore,
-while your transaction is being applied to the database, no other transaction can alter it.
+В качестве примера, представьте таблицу, которая выводит балансы всех аккаунтов
+в электронной валюте. Если запрошен перевод с одного аккаунта на другой, транзакционная природа
+базы данных проверяет, что сумма списанная с одного аккаунта, всегда добавляется на другой аккаунт.
+Если в силу какой-либо причины, добавление суммы перевода на целевой аккаунт невозможно,
+с отправляющего аккаунта сумма также не списывается.
 
-As an example, imagine a table that lists the balances of all accounts in an
-electronic currency. If a transfer from one account to another is requested,
-the transactional nature of the database ensures that if the amount is
-subtracted from one account, it is always added to the other account. If due
-to whatever reason, adding the amount to the target account is not possible,
-the source account is also not modified.
+Более того, транзакция всегда подписана криптографическим ключем отправителя(создателя).
+Это прямолинейно указывает на защиту базы от специфичных модификаций базы данных.
+В примере электронной валюты, простая проверка удостоверяет, что только тот, кто владеет
+ключами к аккаунту может переводить с него деньги.
 
-Furthermore, a transaction is always cryptographically signed by the sender (creator).
-This makes it straightforward to guard access to specific modifications of the
-database. In the example of the electronic currency, a simple check ensures that
-only the person holding the keys to the account can transfer money from it.
+.. Содержание:: ! Блок
 
-.. index:: ! block
-
-Blocks
+Блоки
 ======
 
-One major obstacle to overcome is what (in Bitcoin terms) is called a "double-spend attack":
-What happens if two transactions exist in the network that both want to empty an account?
-Only one of the transactions can be valid, typically the one that is accepted first.
-The problem is that "first" is not an objective term in a peer-to-peer network.
+Одной из основных проблем, которую необходимо решить, это (в терминах Биткоина) так называемая
+"Двойное списание": Что случается, если две транзакции записанные в сеть, хотят опустошить какой-либо аккаунт?
+Только одна из транзакций может быть признана настоящей, обычно та, которую приняли первой. Проблема в том,
+что "первая" транзакция, неприменимый термин в пиринговой сети.
 
-The abstract answer to this is that you do not have to care. A globally accepted order of the transactions
-will be selected for you, solving the conflict. The transactions will be bundled into what is called a "block"
-and then they will be executed and distributed among all participating nodes.
-If two transactions contradict each other, the one that ends up being second will
-be rejected and not become part of the block.
+В вашем случае об этой проблеме просто не следует беспокоиться. Принимая на любой ноде заявка на перевод будет
+выбрана в сети блокчейн за вас, разрешая этот конфликт. Транзакция будет упакована в так называемый "блок" и затем она выполнена
+и записана на все существующие ноды сети. Если две транзакции противоречат друг другу, та, которая по идее должна быть
+выполнена во вторую очередь будет отклонена и не появится в новом блоке.
 
-These blocks form a linear sequence in time and that is where the word "blockchain"
-derives from. Blocks are added to the chain in rather regular intervals - for
-Ethereum this is roughly every 17 seconds.
+Эти блоки формируют линейную последовательность, откуда и берется слово "блокчейн"(буквально - цепочка блоков).
+Блоки добавляются к цепочке через довольно регулярные интервалы - для Эфириума это примерно каждые 17 секунд.
 
-As part of the "order selection mechanism" (which is called "mining") it may happen that
-blocks are reverted from time to time, but only at the "tip" of the chain. The more
-blocks are added on top of a particular block, the less likely this block will be reverted. So it might be that your transactions
-are reverted and even removed from the blockchain, but the longer you wait, the less
-likely it will be.
+Как часть "механизма выбора заявки"(который называется майнинг), иногда может происходить отмена блока, но только в
+самом начале формирования ("наконечнике") цепочки блоков. Чем больше блоков добавлено до конкретного текущего блока,
+тем менее вероятно, что этот блок будет отменен. Таким образом, может случиться так, что ваша транзакция
+отменена или даже удалена из блокчейна, но чем дольше вы ждете, тем менее вероятность того, что это случится.
 
-.. note::
-    Transactions are not guaranteed to be included in the next block or any specific future block,
-    since it is not up to the submitter of a transaction, but up to the miners to determine in which block the transaction is included.
-
-    If you want to schedule future calls of your contract, you can use
-    a smart contract automation tool or an oracle service.
-
+.. Замечание::
+    Нет никаких гарантий, что транзакция будет в конечном счете включена в следующий блок или другой какой-либо из более поздних,
+    блоков, так как это зависит не от отправителя транзакции, а майнеров, которые решают в какой блок транзакция будет включена
+    
+    Если вы хотите запланировать будущие вызовы вашего контракта, вы можете использовать инструмент автоматизации
+    смарт контракта или сервис oracle.
+    
 .. _the-ethereum-virtual-machine:
 
-.. index:: !evm, ! ethereum virtual machine
+.. содержание:: !evm, ! ethereum virtual machine
 
 ****************************
-The Ethereum Virtual Machine
+Виртуальная машина Эфириума
 ****************************
 
-Overview
+Обзор
 ========
 
-The Ethereum Virtual Machine or EVM is the runtime environment
-for smart contracts in Ethereum. It is not only sandboxed but
-actually completely isolated, which means that code running
-inside the EVM has no access to network, filesystem or other processes.
-Smart contracts even have limited access to other smart contracts.
+Виртуальная машина Эфириума или EVM - это исполнительная среда для смарт-контрактов в Эфириуме.
+Она представляет собой не просто сандбок, а действительно полностью изолированную среду.
+Это значит, что код, выполняемый внутри EVM не имеет доступа к сети, файловой системе и другим процессам.
+Смарт-контракты даже имеют ограниченный доступ к другим смарт-контрактам.
 
-.. index:: ! account, address, storage, balance
+.. содержание:: ! аккаунт, адрес, хранение, баланс
 
-.. _accounts:
+.. _аккаунты:
 
-Accounts
+Аккаунт
 ========
 
-There are two kinds of accounts in Ethereum which share the same
-address space: **External accounts** that are controlled by
-public-private key pairs (i.e. humans) and **contract accounts** which are
-controlled by the code stored together with the account.
+Существует два типа аккаунтов в Эфириуме, которые разделяют одно адресное пространство.
+**Внешние аккаунты**, которые контролируются парой публичного и приватного ключа(например, людьми)
+и **аккаунты контрактов**, которые контролируются кодом хранящимся вместе со счетом.
 
-The address of an external account is determined from
-the public key while the address of a contract is
-determined at the time the contract is created
-(it is derived from the creator address and the number
-of transactions sent from that address, the so-called "nonce").
+Адрес внешнего аккаунта определяется из публичного ключа, в то время, как адрес контракта определяется
+в момент создания контракта(контракт доставляется в аккаунты из адреса создателя контракта и оттуда же приходит и номер
+транзакции, так называемый нонс("nonce")
 
-Regardless of whether or not the account stores code, the two types are
-treated equally by the EVM.
+Независимо от того хранит аккаунт код или нет, оба типа аккаунтов интерпретируются EVM одинаково.
 
-Every account has a persistent key-value store mapping 256-bit words to 256-bit
-words called **storage**.
+Каждый аккаунт имеет постоянное хранилище в формате ключ значение, адресующее 256-битные слова к 256-битным словам,
+называется оно **хранилище**(storage)
 
-Furthermore, every account has a **balance** in
-Ether (in "Wei" to be exact, ``1 ether`` is ``10**18 wei``) which can be modified by sending transactions that
-include Ether.
+Более того, каждый аккаунт имеет значение баланса (**balance**) в Эфире(выраженный в "Wei" если быть точным,
+1 эфириум это 10 в 18-ой степени "wei"), которое может быть изменено отправлением транзакции включающей в себя Эфириум.
 
-.. index:: ! transaction
+.. содержание:: ! транзакция
 
-Transactions
+Транзакции
 ============
 
-A transaction is a message that is sent from one account to another
-account (which might be the same or empty, see below).
-It can include binary data (which is called "payload") and Ether.
+Транзакция - это сообщение, которое отправляется с одного аккаунта на другой(это может быть тот же аккаунт
+или пустой, подробнее ниже). Сообщение может включать двоичные данные(которые назваются "полезная нагрузка"(payload)) и Эфир.
+
 
 If the target account contains code, that code is executed and
 the payload is provided as input data.
