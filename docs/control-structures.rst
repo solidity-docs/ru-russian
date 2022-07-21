@@ -1,5 +1,5 @@
 ##################################
-Expressions and Control Structures
+Выражения и контролирующие структуры
 ##################################
 
 .. index:: ! parameter, parameter;input, parameter;output, function parameter, parameter;function, return variable, variable;return, return
@@ -7,24 +7,23 @@ Expressions and Control Structures
 
 .. index:: if, else, while, do/while, for, break, continue, return, switch, goto
 
-Control Structures
+Контролирующие структуры
 ===================
 
-Most of the control structures known from curly-braces languages are available in Solidity:
+Solidity предоставляет большинство контролирующих структур известных из языков использующих фигурные скобки:
 
-There is: ``if``, ``else``, ``while``, ``do``, ``for``, ``break``, ``continue``, ``return``, with
-the usual semantics known from C or JavaScript.
+Предоставляются функции с обычными элементами известыми из языков программирования С или JavaScript: 
 
-Solidity also supports exception handling in the form of ``try``/``catch``-statements,
-but only for :ref:`external function calls <external-function-calls>` and
-contract creation calls. Errors can be created using the :ref:`revert statement <revert-statement>`.
+``if``, ``else``, ``while``, ``do``, ``for``, ``break``, ``continue``, ``return``.
 
-Parentheses can *not* be omitted for conditionals, but curly braces can be omitted
+Солидити также поддерживает oбработку исключений в форме ``try``/``catch``-statements,
+но только для :ref:`внешних функций  <external-function-calls>` и контрактов создания вызовов.Ошибки могут быть созданы используя :ref:`revert statement <revert-statement>`.
+
+Скобки не могут быть опущены для условий, но фигурные скобки могут быть пропущены вокруг единого оперативного блока:
 around single-statement bodies.
 
-Note that there is no type conversion from non-boolean to boolean types as
-there is in C and JavaScript, so ``if (1) { ... }`` is *not* valid
-Solidity.
+Заметье, что конверсия с non-boolean на boolean как в языках С и JavaScript  тут не существует, поэтому
+``if (1) { ... }`` не работает в Solidity.
 
 .. index:: ! function;call, function;internal, function;external
 
