@@ -10,58 +10,52 @@
 Контролирующие структуры
 ===================
 
-Solidity предоставляет большинство контролирующих структур известных из языков использующих фигурные скобки:
+Solidity предоставляет большинство контролирующих структур известных из объектно-ориентированных языков, использующих фигурные скобки:
 
 Предоставляются функции с обычными элементами известыми из языков программирования С или JavaScript: 
 
 ``if``, ``else``, ``while``, ``do``, ``for``, ``break``, ``continue``, ``return``.
 
-Солидити также поддерживает oбработку исключений в форме ``try``/``catch``-statements,
-но только для :ref:`внешних функций  <external-function-calls>` и контрактов создания вызовов.Ошибки могут быть созданы используя :ref:`revert statement <revert-statement>`.
+Солидити также поддерживает oбработку исключений в форме ``try``/``catch``-операторов,
+но только для :ref:`внешних функций  <external-function-calls>` и контрактов создания вызовов. Ошибки могут быть созданы используя :ref:`revert statement <revert-statement>`.
 
-Скобки не могут быть опущены для условий, но фигурные скобки могут быть пропущены вокруг единого оперативного блока:
-around single-statement bodies.
+Скобки не могут быть опущены для условий, но фигурные скобки могут быть пропущены вокруг единого оперативного блока.
 
-Заметье, что конверсия с non-boolean на boolean как в языках С и JavaScript  тут не существует, поэтому
+Заметье, что конверсия с нелогического типа (non-boolean) на логический (boolean) тип как в языках С и JavaScript тут не существует, поэтому
 ``if (1) { ... }`` не работает в Solidity.
 
 .. index:: ! function;call, function;internal, function;external
 
 .. _function-calls:
 
-Function Calls
+Вызов функций
 ==============
 
 .. _internal-function-calls:
 
-Internal Function Calls
+Вызов внутренних функций
 -----------------------
 
-Functions of the current contract can be called directly ("internally"), also recursively, as seen in
-this nonsensical example:
+Функции текущего контракта могут быть вызваны на прямyю, а также рекурсивно, как показано в этом бессмысленном примере:
 
 .. code-block:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity >=0.4.22 <0.9.0;
 
-    // This will report a warning
+    // Эта функция выдаст предупреждение 
     contract C {
         function g(uint a) public pure returns (uint ret) { return a + f(); }
         function f() internal pure returns (uint ret) { return g(7) + f(); }
     }
 
-These function calls are translated into simple jumps inside the EVM. This has
-the effect that the current memory is not cleared, i.e. passing memory references
-to internally-called functions is very efficient. Only functions of the same
-contract instance can be called internally.
+Эти вызовы функций переводятся в простые прыжки внутри EVM. При этом текущая память сохраняется, делая перенос ссылок на память к внутренним функциям очень эффективным. Только функции одного и того же контракта могуть быть вызванны внутри функции.
 
-You should still avoid excessive recursion, as every internal function call
-uses up at least one stack slot and there are only 1024 slots available.
+Использовать рекурсивы чрезмерно не рекоммендуется, т.к. каждый вызов функции использует как минимум один блок памяти, а всего предоставлено 1024 блоков.
 
 .. _external-function-calls:
 
-External Function Calls
+Вызов внешних функций
 -----------------------
 
 Functions can also be called using the ``this.g(8);`` and ``c.g(2);`` notation, where
