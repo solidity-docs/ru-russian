@@ -1,21 +1,21 @@
 ###############################
-Introduction to Smart Contracts
+Введение в смарт-контракты
 ###############################
 
 .. _simple-smart-contract:
 
 ***********************
-A Simple Smart Contract
+Простой смарт-контракт
 ***********************
 
-Let us begin with a basic example that sets the value of a variable and exposes
-it for other contracts to access. It is fine if you do not understand
-everything right now, we will go into more details later.
+Позвольте нам начать с простого примера, в котором мы присваиваем значение переменной и
+предоставляем к ней доступ для других контрактов. Ничего страшного, если вам что-то
+будет непонятьно в этом примере, мы разберем детали позднее. 
 
-Storage Example
+Пример создания контракта с общедоступной переменной.
 ===============
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity >=0.4.16 <0.9.0;
@@ -30,93 +30,96 @@ Storage Example
         function get() public view returns (uint) {
             return storedData;
         }
-    }
+    
 
-The first line tells you that the source code is licensed under the
-GPL version 3.0. Machine-readable license specifiers are important
-in a setting where publishing the source code is the default.
 
-The next line specifies that the source code is written for
-Solidity version 0.4.16, or a newer version of the language up to, but not including version 0.9.0.
-This is to ensure that the contract is not compilable with a new (breaking) compiler version, where it could behave differently.
-:ref:`Pragmas<pragma>` are common instructions for compilers about how to treat the
-source code (e.g. `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
+В первой строке указано, что исходный код предоставляется по лицензии
+GPL версии 3.0 Важно указывать спецификатор лицензии в машинно-читаемом формате
+в случаях, когда планируется сделать написанный код публично доступным.
 
-A contract in the sense of Solidity is a collection of code (its *functions*) and
-data (its *state*) that resides at a specific address on the Ethereum
-blockchain. The line ``uint storedData;`` declares a state variable called ``storedData`` of
-type ``uint`` (*u*\nsigned *int*\eger of *256* bits). You can think of it as a single slot
-in a database that you can query and alter by calling functions of the
-code that manages the database. In this example, the contract defines the
-functions ``set`` and ``get`` that can be used to modify
-or retrieve the value of the variable.
+Следующая строка указывает, что данный код написан для языка Солидити версии 0.4.16,
+или более новой, за ислючением версий выше 0.9.0. 
 
-To access a member (like a state variable) of the current contract, you do not typically add the ``this.`` prefix,
-you just access it directly via its name.
-Unlike in some other languages, omitting it is not just a matter of style,
-it results in a completely different way to access the member, but more on this later.
+Это сделано, чтобы акцентировать внимание на том, что данный контракт не совместим с новой(фундаментально отличающейся) 
+версией компилятора, в котором данный код может вести себя по другому.
 
-This contract does not do much yet apart from (due to the infrastructure
-built by Ethereum) allowing anyone to store a single number that is accessible by
-anyone in the world without a (feasible) way to prevent you from publishing
-this number. Anyone could call ``set`` again with a different value
-and overwrite your number, but the number is still stored in the history
-of the blockchain. Later, you will see how you can impose access restrictions
-so that only you can alter the number.
+:Примечание:`Pragmas<pragma>` широко используемая инструкция для компиляторов, 
+указывающая каким образом следует интерпретировать исходный код (подробнее `pragma once <https://en.wikipedia.org/wiki/Pragma_once>`_).
 
-.. warning::
-    Be careful with using Unicode text, as similar looking (or even identical) characters can
-    have different code points and as such are encoded as a different byte array.
+Контракт(смарт-контракт) с позиции языка Солидити - это массив кода(его *функции*) и
+данные(его *состояния*), которые размещены по определенному адресу в блокчейне Эфириума.
+Строка ``uint storedData`` объявляет состояние переменной ``storedData`` типа ``uint``
+(*u*\nsigned - беззнаковое, *int*\eger -  число, *256* битное). Вы можете рассматривать этот тип
+данных, как одну ячейку базы данных, которую вы можете запрашивать и изменять с помощью вызова
+функций программного кода, который управляет базой данных. В этом примере, контракт
+объявляет функции ``set`` и ``get``, которые могу быть использованы для изменения
+и запроса значения переменной.
 
-.. note::
-    All identifiers (contract names, function names and variable names) are restricted to
-    the ASCII character set. It is possible to store UTF-8 encoded data in string variables.
+Для получения доступа к элементу(например, к переменной состояния) данного контракта, вам не нужно,
+как обычно добавлять префикс ``this``, вы просто обращаетесь к нему напрямую через его имя. В отличии от
+некоторых других языков программирования, исключение префикса не является особенностью стиля, а приводит
+к принципиально другому подходу в реализации доступа к элементам, но подробнее об этом позже.
 
-.. index:: ! subcurrency
+Этот контракт ничего не делает, лишь(благодаря принципам работый инфраструктуры Эфириума) позволяет кому бы то ни было 
+хранить едиственное число, к которому может получить доступ любой желающий, 
+и исключает(какую-либо практическую) возможность уклониться от его публикации в открытый доступ.
+Любой может вызвать функцию ''set'' снова и присвоить переменной другое значение, переписав ваше число,
+но оно все равно будет сохранено в истории блокчейна. Позже, вы увидите, как можно наложить ограничения доступа
+к функции таким образом, что только вы будете иметь право изменять это число.
 
-Subcurrency Example
+.. Внимание::
+    Будьте аккуратны с использованием текста в Unicode кодировке, так как одинаково выглядящие
+    (или даже полностью одинаковые) символы могут иметь разный код в интерпретации Unicode и
+    из-за этого шифруются как совершенно не идентичные байтовые массивы.
+    
+.. Замечание::
+    Все идентификаторы(названия контрактов, имена функций и переменных) должны строго использовать
+    систему кодирования ASCII. Также возможно хранить данные в переменных типа строка с использованием
+    кодировки UTF-8. 
+    
+.. содержание:: ! Производная валюта(Сабкарренси)
+
+Пример производной криптовалюты
 ===================
 
-The following contract implements the simplest form of a
-cryptocurrency. The contract allows only its creator to create new coins (different issuance schemes are possible).
-Anyone can send coins to each other without a need for
-registering with a username and password, all you need is an Ethereum keypair.
+Следующий контракт представляет из себя простейшую форму криптовалюты.
+Контракт позволяет создавать новые монеты только создателю контракта(схема создания может быть самая разнообразная).
+Любой может отправить монеты кому угодно без необходимости регистрации с помощью имени пользователя и пароля,
+все что вам нужно это пара ключей Эфириума.
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity ^0.8.4;
 
     contract Coin {
-        // The keyword "public" makes variables
-        // accessible from other contracts
+        // Ключевое слово "public" окрывает к переменной публичный
+        // доступ из других контрактов
         address public minter;
         mapping (address => uint) public balances;
 
-        // Events allow clients to react to specific
-        // contract changes you declare
+        // Событие(Event) позволяет клиентам реагировать на определенные,
+        // объявленные вами, изменения в контракте
         event Sent(address from, address to, uint amount);
 
-        // Constructor code is only run when the contract
-        // is created
+        // Код Constructor выполняется только в момент создания контракта
         constructor() {
             minter = msg.sender;
         }
 
-        // Sends an amount of newly created coins to an address
-        // Can only be called by the contract creator
+        // Даная функция отправляет количество, определенное в переменной amount, вновь созданых монет на определеный адрес
+        // Может быть вызвана только создателем контракта
         function mint(address receiver, uint amount) public {
             require(msg.sender == minter);
             balances[receiver] += amount;
         }
 
-        // Errors allow you to provide information about
-        // why an operation failed. They are returned
-        // to the caller of the function.
+        // Обработчики ошибок позволяют вам вывести пользователю информацию
+        // о причинах провала операции. Ответ возвращается к тому, кто вызвал функцию.
         error InsufficientBalance(uint requested, uint available);
 
-        // Sends an amount of existing coins
-        // from any caller to an address
+        // Отправляет определенное в переменной amount количество существующих монет
+        // с кошелька того, кто вызвал эту функцию на любой другой адрес.
         function send(address receiver, uint amount) public {
             if (amount > balances[msg.sender])
                 revert InsufficientBalance({
@@ -130,63 +133,65 @@ registering with a username and password, all you need is an Ethereum keypair.
         }
     }
 
-This contract introduces some new concepts, let us go through them one by one.
+В этом контракте есть некоторые новые концепции, давайте рассмотрим их одну за другой.
 
-The line ``address public minter;`` declares a state variable of type :ref:`address<address>`.
-The ``address`` type is a 160-bit value that does not allow any arithmetic operations.
-It is suitable for storing addresses of contracts, or a hash of the public half
-of a keypair belonging to :ref:`external accounts<accounts>`.
+Строка ''address public minter;'' объявляет постоянную переменную типа адрес 'address<address>'.
+Тип ``address``(адрес) представляет собой 160-битное значение, с которым запрещено проводить какие-либо 
+арифметические операции. Эта переменная подходит для хранения адресов контрактов или хэш значений публичной
+части пары ключей от каких-либо внешних аккаунтов.
 
-The keyword ``public`` automatically generates a function that allows you to access the current value of the state
-variable from outside of the contract. Without this keyword, other contracts have no way to access the variable.
-The code of the function generated by the compiler is equivalent
-to the following (ignore ``external`` and ``view`` for now):
+Ключевое слово ''public''(публичный) автоматически генерирует функцию, которая позволяет вам получать доступ
+к текущему значению постоянной переменной запросами из-за пределов контракта. Без этого ключевого слова, другие
+контракты не смогут получить доступ к этой переменной. Код функции, сгенерированный компилятором, представляет нечто подобное:
+(пока что не обращайте внимание на ``external`` и ``view``)
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     function minter() external view returns (address) { return minter; }
 
-You could add a function like the above yourself, but you would have a function and state variable with the same name.
-You do not need to do this, the compiler figures it out for you.
+Вы можете самостоятельно добавить в контракт подобную функцию, но в итое вы получите функцию и постоянную переменную с
+таким же именем. Вам не нужно этого делать, комрилятор сделает это за вас.
 
-.. index:: mapping
+.. содержание:: Мэппинг(Сопоставление)
 
-The next line, ``mapping (address => uint) public balances;`` also
-creates a public state variable, but it is a more complex datatype.
+Следующая линия ``mapping (address => uint) public balances;`` также создает
+переменную публичного состояния, но это более сложный тип данных. 
+mapping <mapping-types> тип сопоставляет адреса к типу беззнаковое число `unsigned integers <integers>`
 The :ref:`mapping <mapping-types>` type maps addresses to :ref:`unsigned integers <integers>`.
 
-Mappings can be seen as `hash tables <https://en.wikipedia.org/wiki/Hash_table>`_ which are
-virtually initialised such that every possible key exists from the start and is mapped to a
-value whose byte-representation is all zeros. However, it is neither possible to obtain a list of all keys of
-a mapping, nor a list of all values. Record what you
-added to the mapping, or use it in a context where this is not needed. Or
-even better, keep a list, or use a more suitable data type.
+Мэппинг может рассматриваться как Хэш таблицы <https://en.wikipedia.org/wiki/Hash_table>, которые
+виртуально инициализированны таким образом, что каждый возможный ключ существует с самого начала
+и мэппирован к значению, чье байтовое представление будет состоять из одних нулей(0). Однако,
+это невозможно, получить список всех ключей мэппирования, как и список всех значений. Запишите, то что
+вы добавили к мэппингу или используйте этот тип в контексте, где знание списка значений мэппинга не является
+необходимым. Или даже лучше, сохраните список или используйте более подходящий тип данных.
 
-The :ref:`getter function<getter-functions>` created by the ``public`` keyword
-is more complex in the case of a mapping. It looks like the
-following:
+Функция getter (Отсылка `getter function<getter-functions>`) создается ключевым словом ``public``
+и является более сложным случаем мэппинга. Выглядит это примерно так:
 
-.. code-block:: solidity
+.. Пример кода:: solidity
 
     function balances(address account) external view returns (uint) {
         return balances[account];
     }
 
-You can use this function to query the balance of a single account.
 
-.. index:: event
+Вы можете использовать эту функцию, чтобы получать баланс какого-либо одного аккаунта.
 
-The line ``event Sent(address from, address to, uint amount);`` declares
-an :ref:`"event" <events>`, which is emitted in the last line of the function
-``send``. Ethereum clients such as web applications can
-listen for these events emitted on the blockchain without much
-cost. As soon as it is emitted, the listener receives the
-arguments ``from``, ``to`` and ``amount``, which makes it possible to track
-transactions.
 
-To listen for this event, you could use the following
-JavaScript code, which uses `web3.js <https://github.com/ethereum/web3.js/>`_ to create the ``Coin`` contract object,
-and any user interface calls the automatically generated ``balances`` function from above::
+.. Содержание:: Событие(event)
+    
+Строка ``event Sent(address from, address to, uint amount);`` объявляет
+событие (event), которое выпускается в последней линии функции ``send``.
+Клиенты Эфириума, такие как веб-приложения, могут слушать такие события,
+выпускаемые в блокчейне за небольшую цену. Как только событие произошло,
+слушающее событие приложение получает аргументы ``from``(от кого), ``to``(кому) 
+and ``amount``(количество), с помощью которых можно отследить транзации.
+
+Чтобы слушать это событие, вы можете использовать следующий код JavaScript,
+который использует библиотеку web3.js <https://github.com/ethereum/web3.js/>,
+чтобы создать объект контракта ``Coin``, и любой пользовательский интерфейс
+автоматически вызывающий сгенерированную  функцию ``balances`` указанную выше: 
 
     Coin.Sent().watch({}, '', function(error, result) {
         if (!error) {
@@ -199,397 +204,380 @@ and any user interface calls the automatically generated ``balances`` function f
         }
     })
 
-.. index:: coin
+.. Содержание:: Монета(coin)
 
-The :ref:`constructor<constructor>` is a special function that is executed during the creation of the contract and
-cannot be called afterwards. In this case, it permanently stores the address of the person creating the
-contract. The ``msg`` variable (together with ``tx`` and ``block``) is a
-:ref:`special global variable <special-variables-functions>` that
-contains properties which allow access to the blockchain. ``msg.sender`` is
-always the address where the current (external) function call came from.
+constructor - это специальная функция, которая выполняется во время создания контракта и после 
+этого уже не может быть вызвана. В этом случая, она навсегда сохраняет адрес создателя контракта.
+Переменная ``msg`` (вместе с ``tx`` и ``block``) является специальной глабальной переменной, которая
+содержит свойства, которые позволяют взаимодействовать с блокчейном. ``msg.sender`` это всегда адрес
+с которого вызывается текущая(внешняя) функция.
 
-The functions that make up the contract, and that users and contracts can call are ``mint`` and ``send``.
+Функция которая создает и устанавливает контракт, а также пользователь, которые это делает
+и сам контракт могут вызывать функции ``mint`` и ``send``.
 
-The ``mint`` function sends an amount of newly created coins to another address. The :ref:`require
-<assert-and-require>` function call defines conditions that reverts all changes if not met. In this
-example, ``require(msg.sender == minter);`` ensures that only the creator of the contract can call
-``mint``. In general, the creator can mint as many tokens as they like, but at some point, this will
-lead to a phenomenon called "overflow". Note that because of the default :ref:`Checked arithmetic
-<unchecked>`, the transaction would revert if the expression ``balances[receiver] += amount;``
-overflows, i.e., when ``balances[receiver] + amount`` in arbitrary precision arithmetic is larger
-than the maximum value of ``uint`` (``2**256 - 1``). This is also true for the statement
-``balances[receiver] += amount;`` in the function ``send``.
+Функция ``mint`` отправляет вновь созданные монеты на другой адрес. Метод функции require определяет
+условия для выполнения функции, и если условия не выполняются, то выполнение отменяется. В это примере,
+``require(msg.sender == minter);`` - эта строчка подразумевает, что только создатель контракта может
+вызывать функцию ``mint``. В основном, создатель может выпустить столько токенов, сколько он хочет,
+но с другой стороны это может привести к феномену, называемому "overflow"(переполнение). Обратите внимание,
+что из-за проверки арифметических соотношений транзакция может отмениться, если выражение
+``balances[receiver] += amount;``(баланс получателя = инкремент на определенное число) переполняет значение
+переменной, например, когда увеличение баланса кошелька получателя на произвольное точное число, приводит
+значение баланса кошелька к такому числу, которое превышеает максимально возможное значение в
+беззнаковом 256 битном числе минус 1. Такая ситуация также возмжона для строки ``balances[receiver] += amount;``
+в функции ``send``.
 
-:ref:`Errors <errors>` allow you to provide more information to the caller about
-why a condition or operation failed. Errors are used together with the
-:ref:`revert statement <revert-statement>`. The ``revert`` statement unconditionally
-aborts and reverts all changes similar to the ``require`` function, but it also
-allows you to provide the name of an error and additional data which will be supplied to the caller
-(and eventually to the front-end application or block explorer) so that
-a failure can more easily be debugged or reacted upon.
+Функция ошибка(error) позволяет вам сопроводить ошибку большим количеством подробностей о том, почему
+условие или операция из контракта не выполнились. Ошибки используются вместе с 
+откатом состояния(revert statement). Откат состояния без каких-либо дополнительных условий
+отменяет и восстанавливает все изменения, в изначальное состояние, подобно функции ``require``,
+а также  позволяет сопроводить это указанием имени ошибки и дополнительной информацией,
+которую получает вызвавший функцию, которая привела к ошибке(в конечном итоге
+информация об ошибке выводится на фронт-энд приложения или в блок эксплорер). Сопровождение
+ошибки дополнительной информацией позволяет облегчить отладку и правильно на нее отреагировать.
 
-The ``send`` function can be used by anyone (who already
-has some of these coins) to send coins to anyone else. If the sender does not have
-enough coins to send, the ``if`` condition evaluates to true. As a result, the ``revert`` will cause the operation to fail
-while providing the sender with error details using the ``InsufficientBalance`` error.
+Функция ``send``(отправить) может быть использована любым пользователем(у кого уже есть
+немного этих монет), чтобы отправить монеты кому-нибудь еще. Если у отправляющего недостаточно 
+монет для отправки заявленной суммы, то условие ``if`` устанавливается в ``True``. В результате будет вызвана функция
+``revert``, которая откатит все изменения инициированные пользователем, и отправка монет вернет ошибку 
+``InsufficientBalance``, указывающую на недостаточность средств для отправки.
 
-.. note::
-    If you use
-    this contract to send coins to an address, you will not see anything when you
-    look at that address on a blockchain explorer, because the record that you sent
-    coins and the changed balances are only stored in the data storage of this
-    particular coin contract. By using events, you can create
-    a "blockchain explorer" that tracks transactions and balances of your new coin,
-    but you have to inspect the coin contract address and not the addresses of the
-    coin owners.
-
-.. _blockchain-basics:
+.. Замечание::
+    Если вы используете этот контракт для отправки монет на определенный адрес, 
+    то вы ничего не увидите, если попробуете получить данные об адресе через блокчейн
+    эксплорер, потому что запись, которой вы отправляете монеты и измененные балансы
+    сохраняются в данных конкретного контракта. Используя события, вы можете создать
+    свой "блокчейн эксплорер", который будет отслеживать переводы и балансы вашей новой
+    монеты, но вы должны будете отслеживать адреса контрактов вашей монеты, а не адреса
+    владельцев монет.
+ 
+.. основы блокчейна:
 
 *****************
-Blockchain Basics
+Основы блокчейна
 *****************
 
-Blockchains as a concept are not too hard to understand for programmers. The reason is that
-most of the complications (mining, `hashing <https://en.wikipedia.org/wiki/Cryptographic_hash_function>`_,
-`elliptic-curve cryptography <https://en.wikipedia.org/wiki/Elliptic_curve_cryptography>`_,
-`peer-to-peer networks <https://en.wikipedia.org/wiki/Peer-to-peer>`_, etc.)
-are just there to provide a certain set of features and promises for the platform. Once you accept these
-features as given, you do not have to worry about the underlying technology - or do you have
-to know how Amazon's AWS works internally in order to use it?
+Блокчейны как концепт довольно просты для понимания программистами. Причина в том, что основные
+сложности(майнинг, хэширование <https://en.wikipedia.org/wiki/Cryptographic_hash_function>, эллиптическая криптография
+<https://en.wikipedia.org/wiki/Elliptic_curve_cryptography>, пиринговые сети <https://en.wikipedia.org/wiki/Peer-to-peer> и прочее) 
+для понимания здесь в определенных особенностях и ожиданиях от платформы. Как только
+вы принимаете эти особенности, как данность, вам не нужно больше беспокоиться о тех технологиях,
+которые лежат "под капотом" - или вам обязательно знать как Amazon AWS работает внутри, чтобы использовать его?
 
-.. index:: transaction
+.. Содержание:: Переводы(Транзакции)
 
-Transactions
+Транзакции
 ============
 
-A blockchain is a globally shared, transactional database.
-This means that everyone can read entries in the database just by participating in the network.
-If you want to change something in the database, you have to create a so-called transaction
-which has to be accepted by all others.
-The word transaction implies that the change you want to make (assume you want to change
-two values at the same time) is either not done at all or completely applied. Furthermore,
-while your transaction is being applied to the database, no other transaction can alter it.
+Блокчейн - это глобально распределенная база транзакций. Это значит, что каждый может 
+прочитать записи в базе с помощью участия в сети. Если вы хотите поменять что-то в 
+базе данных, вы должны создать так называемую транзакцию, которую должны принять остальные
+участники сети. Слово "транзакция" подразумевает, что изменение, которое вы хотите сделать
+(допустим вы хотите изменить два значения в одно и то же время) либо не будет выполнена вообще
+или будет полностью принята. К тому же, пока ваша транзакция применяется для изменения базы
+данных, никакая другая транзакция не может на нее повлиять.
 
-As an example, imagine a table that lists the balances of all accounts in an
-electronic currency. If a transfer from one account to another is requested,
-the transactional nature of the database ensures that if the amount is
-subtracted from one account, it is always added to the other account. If due
-to whatever reason, adding the amount to the target account is not possible,
-the source account is also not modified.
+В качестве примера, представьте таблицу, которая выводит балансы всех аккаунтов
+в электронной валюте. Если запрошен перевод с одного аккаунта на другой, транзакционная природа
+базы данных проверяет, что сумма списанная с одного аккаунта, всегда добавляется на другой аккаунт.
+Если в силу какой-либо причины, добавление суммы перевода на целевой аккаунт невозможно,
+с отправляющего аккаунта сумма также не списывается.
 
-Furthermore, a transaction is always cryptographically signed by the sender (creator).
-This makes it straightforward to guard access to specific modifications of the
-database. In the example of the electronic currency, a simple check ensures that
-only the person holding the keys to the account can transfer money from it.
+Более того, транзакция всегда подписана криптографическим ключем отправителя(создателя).
+Это прямолинейно указывает на защиту базы от специфичных модификаций базы данных.
+В примере электронной валюты, простая проверка удостоверяет, что только тот, кто владеет
+ключами к аккаунту может переводить с него деньги.
 
-.. index:: ! block
+.. Содержание:: ! Блок
 
-Blocks
+Блоки
 ======
 
-One major obstacle to overcome is what (in Bitcoin terms) is called a "double-spend attack":
-What happens if two transactions exist in the network that both want to empty an account?
-Only one of the transactions can be valid, typically the one that is accepted first.
-The problem is that "first" is not an objective term in a peer-to-peer network.
+Одной из основных проблем, которую необходимо решить, это (в терминах Биткоина) так называемая
+"Двойное списание": Что случается, если две транзакции записанные в сеть, хотят опустошить какой-либо аккаунт?
+Только одна из транзакций может быть признана настоящей, обычно та, которую приняли первой. Проблема в том,
+что "первая" транзакция, неприменимый термин в пиринговой сети.
 
-The abstract answer to this is that you do not have to care. A globally accepted order of the transactions
-will be selected for you, solving the conflict. The transactions will be bundled into what is called a "block"
-and then they will be executed and distributed among all participating nodes.
-If two transactions contradict each other, the one that ends up being second will
-be rejected and not become part of the block.
+В вашем случае об этой проблеме просто не следует беспокоиться. Принимая на любой ноде заявка на перевод будет
+выбрана в сети блокчейн за вас, разрешая этот конфликт. Транзакция будет упакована в так называемый "блок" и затем она выполнена
+и записана на все существующие ноды сети. Если две транзакции противоречат друг другу, та, которая по идее должна быть
+выполнена во вторую очередь будет отклонена и не появится в новом блоке.
 
-These blocks form a linear sequence in time and that is where the word "blockchain"
-derives from. Blocks are added to the chain in rather regular intervals - for
-Ethereum this is roughly every 17 seconds.
+Эти блоки формируют линейную последовательность, откуда и берется слово "блокчейн"(буквально - цепочка блоков).
+Блоки добавляются к цепочке через довольно регулярные интервалы - для Эфириума это примерно каждые 17 секунд.
 
-As part of the "order selection mechanism" (which is called "mining") it may happen that
-blocks are reverted from time to time, but only at the "tip" of the chain. The more
-blocks are added on top of a particular block, the less likely this block will be reverted. So it might be that your transactions
-are reverted and even removed from the blockchain, but the longer you wait, the less
-likely it will be.
+Как часть "механизма выбора заявки"(который называется майнинг), иногда может происходить отмена блока, но только в
+самом начале формирования ("наконечнике") цепочки блоков. Чем больше блоков добавлено до конкретного текущего блока,
+тем менее вероятно, что этот блок будет отменен. Таким образом, может случиться так, что ваша транзакция
+отменена или даже удалена из блокчейна, но чем дольше вы ждете, тем менее вероятность того, что это случится.
 
-.. note::
-    Transactions are not guaranteed to be included in the next block or any specific future block,
-    since it is not up to the submitter of a transaction, but up to the miners to determine in which block the transaction is included.
-
-    If you want to schedule future calls of your contract, you can use
-    a smart contract automation tool or an oracle service.
-
+.. Замечание::
+    Нет никаких гарантий, что транзакция будет в конечном счете включена в следующий блок или другой какой-либо из более поздних,
+    блоков, так как это зависит не от отправителя транзакции, а майнеров, которые решают в какой блок транзакция будет включена
+    
+    Если вы хотите запланировать будущие вызовы вашего контракта, вы можете использовать инструмент автоматизации
+    смарт контракта или сервис oracle.
+    
 .. _the-ethereum-virtual-machine:
 
-.. index:: !evm, ! ethereum virtual machine
+.. содержание:: !evm, ! ethereum virtual machine
 
 ****************************
-The Ethereum Virtual Machine
+Виртуальная машина Эфириума
 ****************************
 
-Overview
+Обзор
 ========
 
-The Ethereum Virtual Machine or EVM is the runtime environment
-for smart contracts in Ethereum. It is not only sandboxed but
-actually completely isolated, which means that code running
-inside the EVM has no access to network, filesystem or other processes.
-Smart contracts even have limited access to other smart contracts.
+Виртуальная машина Эфириума или EVM - это исполнительная среда для смарт-контрактов в Эфириуме.
+Она представляет собой не просто сандбок, а действительно полностью изолированную среду.
+Это значит, что код, выполняемый внутри EVM не имеет доступа к сети, файловой системе и другим процессам.
+Смарт-контракты даже имеют ограниченный доступ к другим смарт-контрактам.
 
-.. index:: ! account, address, storage, balance
+.. содержание:: ! аккаунт, адрес, хранение, баланс
 
-.. _accounts:
+.. _аккаунты:
 
-Accounts
+Аккаунт
 ========
 
-There are two kinds of accounts in Ethereum which share the same
-address space: **External accounts** that are controlled by
-public-private key pairs (i.e. humans) and **contract accounts** which are
-controlled by the code stored together with the account.
+Существует два типа аккаунтов в Эфириуме, которые разделяют одно адресное пространство.
+**Внешние аккаунты**, которые контролируются парой публичного и приватного ключа(например, людьми)
+и **аккаунты контрактов**, которые контролируются кодом хранящимся вместе со счетом.
 
-The address of an external account is determined from
-the public key while the address of a contract is
-determined at the time the contract is created
-(it is derived from the creator address and the number
-of transactions sent from that address, the so-called "nonce").
+Адрес внешнего аккаунта определяется из публичного ключа, в то время, как адрес контракта определяется
+в момент создания контракта(контракт доставляется в аккаунты из адреса создателя контракта и оттуда же приходит и номер
+транзакции, так называемый нонс("nonce")
 
-Regardless of whether or not the account stores code, the two types are
-treated equally by the EVM.
+Независимо от того хранит аккаунт код или нет, оба типа аккаунтов интерпретируются EVM одинаково.
 
-Every account has a persistent key-value store mapping 256-bit words to 256-bit
-words called **storage**.
+Каждый аккаунт имеет постоянное хранилище в формате ключ значение, адресующее 256-битные слова к 256-битным словам,
+называется оно **хранилище**(storage)
 
-Furthermore, every account has a **balance** in
-Ether (in "Wei" to be exact, ``1 ether`` is ``10**18 wei``) which can be modified by sending transactions that
-include Ether.
+Более того, каждый аккаунт имеет значение баланса (**balance**) в Эфире(выраженный в "Wei" если быть точным,
+1 эфириум это 10 в 18-ой степени "wei"), которое может быть изменено отправлением транзакции включающей в себя Эфириум.
 
-.. index:: ! transaction
+.. содержание:: ! транзакция
 
-Transactions
+Транзакции
 ============
 
-A transaction is a message that is sent from one account to another
-account (which might be the same or empty, see below).
-It can include binary data (which is called "payload") and Ether.
+Транзакция - это сообщение, которое отправляется с одного аккаунта на другой(это может быть тот же аккаунт
+или пустой, подробнее ниже). Сообщение может включать двоичные данные(которые назваются "полезная нагрузка"(payload)) и Эфир.
 
-If the target account contains code, that code is executed and
-the payload is provided as input data.
+Если целевой аккаунт содержит код, этот код выполняется и полезная нагрузка представляет из себя вводные данные.
 
-If the target account is not set (the transaction does not have
-a recipient or the recipient is set to ``null``), the transaction
-creates a **new contract**.
-As already mentioned, the address of that contract is not
-the zero address but an address derived from the sender and
-its number of transactions sent (the "nonce"). The payload
-of such a contract creation transaction is taken to be
-EVM bytecode and executed. The output data of this execution is
-permanently stored as the code of the contract.
-This means that in order to create a contract, you do not
-send the actual code of the contract, but in fact code that
-returns that code when executed.
+Если целевой аккаунт не указан(транзакция не имеет получаетеля или поле получателя установлено в "null"),
+транзакция создает новый контракт(**new contract**).
 
-.. note::
-  While a contract is being created, its code is still empty.
-  Because of that, you should not call back into the
-  contract under construction until its constructor has
-  finished executing.
+Как уже было упомянуто, адрес этого контракта не нулевой(пустой) адрес этого контракта не ноль, а адрес
+получаемый от отправителя и номер отправленной транзакции("nonce"). "Полезная нагрузка"(payload) такой
+транзакции создания контракта, исполняется как двоичный код в виртуальной машине Эфириума. Результат
+исполнения этого кода сохраняется навсегда, как код этого контракта. Это значит,
+что с целью создания контракта, вы отправляете не сам код контракта, а код, который после исполнения
+на виртуальной машине Эфириума возвращает код контракта.
 
-.. index:: ! gas, ! gas price
+.. Замечание::
+  В процессе создания контракта, его код все еще пустой.
+  Из-за этого, вам не следует делать вызовы в контракт, находящийся в процессе создания,
+  до того момента пока конструктор не закончил выполнять код создания контракта.
+  
+.. индекс:: ! gas, ! gas price (Газ, цена газа)
 
-Gas
+Gas(Газ)
 ===
 
-Upon creation, each transaction is charged with a certain amount of **gas**
-that has to be paid for by the originator of the transaction (``tx.origin``).
-While the EVM executes the
-transaction, the gas is gradually depleted according to specific rules.
-If the gas is used up at any point (i.e. it would be negative),
-an out-of-gas exception is triggered, which ends execution and reverts all modifications
-made to the state in the current call frame.
+В процессе создания, каждая транзакция облагается определенным размером газа **gas**,
+который должен быть оплачен инициатором транзакции(''tx.origin'').
+Пока виртуальная машина Эфириума выполняет транзакцию, газ постепенно расходуется в соостветствии
+с определенными правилами. Если газ израсходован в какой-либо момент исполнения(например, он становится отрицательным занчением),
+запускается триггер закончившегося газа, который завершает исполнение кода и отменяет все
+изменения, которые были сделаны для исполнения транзакции в рамках данного вызова.
 
-This mechanism incentivizes economical use of EVM execution time
-and also compensates EVM executors (i.e. miners / stakers) for their work.
-Since each block has a maximum amount of gas, it also limits the amount
-of work needed to validate a block.
+Этот механизм создает экономическую мотивацию использования процессорного времени виртуальной машины Эфириума и
+также компенсирует затраты для исполнителей предоставляющих процессорные мощности (например майнеры и держатели)ю
+Так как каждый блок имеет максимальное количество газа, это также ограничивает количество работы, которую нужно 
+выполнить, чтобы валидировать блок.
 
-The **gas price** is a value set by the originator of the transaction, who
-has to pay ``gas_price * gas`` up front to the EVM executor.
-If some gas is left after execution, it is refunded to the transaction originator.
-In case of an exception that reverts changes, already used up gas is not refunded.
+Цена за газ **gas price** это значение устанавливаемое инициатором транзакции,который должен
+заплатить сумму рассчитываемую по формуле ''gas_price * gas'' перед выполнением кода в виртуальтной машине Эфириума
 
-Since EVM executors can choose to include a transaction or not,
-transaction senders cannot abuse the system by setting a low gas price.
+Если после выполнения осталось сколько-то газа, он возвращается к инициатору транзакции.
+Если выполнение контракта отменяется, то уже потраченный газ не возвращается.
 
-.. index:: ! storage, ! memory, ! stack
+Так как исполнители кода виртуальной машины эфириума могут выбирать включать транзакцию в блок или нет,
+отправители транзакции не могут повредить системе, устанавливая низкие цены на газ.
 
-Storage, Memory and the Stack
+.. содержание:: ! хранилище, ! память, ! стек
+
+Хранилище, память и стек
 =============================
 
-The Ethereum Virtual Machine has three areas where it can store data:
-storage, memory and the stack.
+Виртуальная машина Эфириума имеет три места, где она может хранить данные:
+хранилище, память и стек.
 
-Each account has a data area called **storage**, which is persistent between function calls
-and transactions.
-Storage is a key-value store that maps 256-bit words to 256-bit words.
-It is not possible to enumerate storage from within a contract, it is
-comparatively costly to read, and even more to initialise and modify storage. Because of this cost,
-you should minimize what you store in persistent storage to what the contract needs to run.
-Store data like derived calculations, caching, and aggregates outside of the contract.
-A contract can neither read nor write to any storage apart from its own.
+Каждый аккаунт имеет место назваемое хранилище **storage**, которое находится между выховами функций
+и транзакциями.
+Хранилище - это место для хранения пар ключ-значение, которое сопоставляет 256-битные слова к 256-битным словам.
+Хранилище нельзя перебрать изнутри контракта, он достаточно трудозатратный по чтению из него, и даже больше
+инициализировать и модифицировать его. Из-за этой трудозатратности, вам следует минимизировать объем информации,
+хранящейся в нем, до объема необходимого только для запуска контракта. Храните данные типа произведенных расчетов,
+кэшей и собранных данных за пределами контракта. Контракт не может ни читать, ни писать в любое хранилище за пределами
+него самого.
 
-The second data area is called **memory**, of which a contract obtains
-a freshly cleared instance for each message call. Memory is linear and can be
-addressed at byte level, but reads are limited to a width of 256 bits, while writes
-can be either 8 bits or 256 bits wide. Memory is expanded by a word (256-bit), when
-accessing (either reading or writing) a previously untouched memory word (i.e. any offset
-within a word). At the time of expansion, the cost in gas must be paid. Memory is more
-costly the larger it grows (it scales quadratically).
+Вторая среда для хранения данных назвается **память**(**memory**), контракт
+получает очищенную новую память для каждого сообщения вызова. Память эта
+линейная и может быть адресована на уровне байтов, но чтение лимитировано шириной
+256 бит, в то время как запись может быть 8 бит или 256 бит. Память расширяется на одно
+слово(256-бит), в момент доступа(на чтение или запись) к предыдущему не тронутое 
+слово в памяти(например, смещение внутри слова). В момент расширения, должна
+быть оплачена стоимость газа. Память тем больше стоит, чем больше она задействуется
+(она масштабируется квадратично).
 
-The EVM is not a register machine but a stack machine, so all
-computations are performed on a data area called the **stack**. It has a maximum size of
-1024 elements and contains words of 256 bits. Access to the stack is
-limited to the top end in the following way:
-It is possible to copy one of
-the topmost 16 elements to the top of the stack or swap the
-topmost element with one of the 16 elements below it.
-All other operations take the topmost two (or one, or more, depending on
-the operation) elements from the stack and push the result onto the stack.
-Of course it is possible to move stack elements to storage or memory
-in order to get deeper access to the stack,
-but it is not possible to just access arbitrary elements deeper in the stack
-without first removing the top of the stack.
+Виртуальная машина Эфириума это не регистровая машина, а стековая, поэтому все 
+вычисления выплняются в области данных называемой **stack**. Ее максимальный размер
+1024 элемента содержащие 256 битные слова. Доступ к стеку ограничен к верхнему концу в
+следующем порядке:
+Возможно скопировать один из верхних 16-ти элементов на самый верх стека или поменять местами
+верхний элемент стека с одним из 16 элементов под ним. Все другие операции берут два из 16-ти верхних
+(или один элемент или больше, в зависимости от операции) элементов из стека и проталкивают результат
+на верх стека. Конечно возможно переместить элементы стека в хранилище или память
+для того, чтобы можно было получить доступ к более глубоким элементам стека(глубже верхних
+16-ти элементов), но нельзя просто получить произвольный доступ к к более глубоким элементам
+стека без того, чтобы убрать верхний стек. 
 
-.. index:: ! instruction
+.. содержание:: ! Инструкция
 
-Instruction Set
+Набор инструкций
 ===============
 
-The instruction set of the EVM is kept minimal in order to avoid
-incorrect or inconsistent implementations which could cause consensus problems.
-All instructions operate on the basic data type, 256-bit words or on slices of memory
-(or other byte arrays).
-The usual arithmetic, bit, logical and comparison operations are present.
-Conditional and unconditional jumps are possible. Furthermore,
-contracts can access relevant properties of the current block
-like its number and timestamp.
+Набор инструкций для виртуальной машины Эфириума минимален, для того чтобы
+избежать неправильного или насоответствующего применения, что может приводить
+к проблемам при принятии консенсуса. Все инструкции работают с базовыми типами данных,
+256-битными словами или слоями памяти (или других байтовых массивов).
 
-For a complete list, please see the :ref:`list of opcodes <opcodes>` as part of the inline
-assembly documentation.
+Возможны обычные арифметические, битовые, логические или операции сравнения,
+обусловленные и необусловленные переходы. Более того, контракты могут получать доступ к 
+релевантным свойствам конкретного блока, типа его номера или метки времени.
 
-.. index:: ! message call, function;call
+Для полного списка, пожалуйста посморите документ "список операционных кодов" :ref:`list of opcodes <opcodes>`,
+как часть внутренней сборочной документации.
 
-Message Calls
+.. содержание:: ! вызовы, вызовы сообщений, функции
+
+Вызовы сообщений
 =============
 
-Contracts can call other contracts or send Ether to non-contract
-accounts by the means of message calls. Message calls are similar
-to transactions, in that they have a source, a target, data payload,
-Ether, gas and return data. In fact, every transaction consists of
-a top-level message call which in turn can create further message calls.
+Контракты могут вызывать другие контракты или отправлять Эфир на
+неконтрактные аккаунты с помощью вызовов сообщений. Вызовы сообщений похожи на
+транзакции, поэтому они имеют источник, цель, полезную нагрузку,
+Эфир, газ и возвращаемые данные. По факту, каждая транзакция состоит из
+верхнеуровнего сообщения, которое в свою очередь может вызывать последующие
+вызовы сообщений.
 
-A contract can decide how much of its remaining **gas** should be sent
-with the inner message call and how much it wants to retain.
-If an out-of-gas exception happens in the inner call (or any
-other exception), this will be signaled by an error value put onto the stack.
-In this case, only the gas sent together with the call is used up.
-In Solidity, the calling contract causes a manual exception by default in
-such situations, so that exceptions "bubble up" the call stack.
+Контракт может решить как много из оставшегося **газа** должно быть отправлено
+с внутренним вызовом сообщения и как много он должен сохранить. Если
+случается исключение недостаточного количества газа во внетреннем вызове(или
+любое другое исключение), об этом будет сообщено значением ошибки возвращенным на верх стека.
+В этом случае, будет потрачен только газ отправленный вместе с вызовом.
+В Солидити, в таких случаях вызов контракта приводит к ручному исключению по умолчанию,
+и такие исключения "накачивают" стек вызовов.
 
-As already said, the called contract (which can be the same as the caller)
-will receive a freshly cleared instance of memory and has access to the
-call payload - which will be provided in a separate area called the **calldata**.
-After it has finished execution, it can return data which will be stored at
-a location in the caller's memory preallocated by the caller.
-All such calls are fully synchronous.
+Как уже было сказано, вызванный контракт(который может быть тем же, который и вызывает)
+получит свежую чистую среду памяти и получит доступ к вызову полезной нагрузки сообщения,
+которая будет доступна в отдельной среде называемой **calldata**(вызываемые данные).
+После тоо как выполнение завершено, полезная нагрузка может вернуть данные, которые
+будут сохранены определенном месте в предварительно выделенной памяти вызывающего контракта.
+Все такие вызовы полностью синхронны.
 
-Calls are **limited** to a depth of 1024, which means that for more complex
-operations, loops should be preferred over recursive calls. Furthermore,
-only 63/64th of the gas can be forwarded in a message call, which causes a
-depth limit of a little less than 1000 in practice.
+Вызовы **ограничены** глубиной 1024, это подразумевает, что для более сложных операций, 
+циклы должны предпочитать обратные вызовы. Более того, только 63/64 газа может быть
+перенаправленно в вызов сообщения, что приводит на практике к ограничениям глубины чуть менее чем 1000.
 
-.. index:: delegatecall, callcode, library
+.. содердажние:: Делегированный вызов, код вызова, библиотека
 
-Delegatecall / Callcode and Libraries
+Делегированный вызов / Код вызова и библиотеки
 =====================================
 
-There exists a special variant of a message call, named **delegatecall**
-which is identical to a message call apart from the fact that
-the code at the target address is executed in the context (i.e. at the address) of the calling
-contract and ``msg.sender`` and ``msg.value`` do not change their values.
+Существует специальный вариант вызова сообщения, назваемый делегированный вызов (**delegatecall**),
+который аналогичен вызову сообщения, за исключением того факта, что код целевого адреса выполняется в контексте
+(например на адресе) вызывающего контракта и переменные ''msg.sender'' и ''msg.value'' не изменяют своих значений.
 
-This means that a contract can dynamically load code from a different
-address at runtime. Storage, current address and balance still
-refer to the calling contract, only the code is taken from the called address.
+Это значит, что контракт может динамически загружать код из различных адресов во время исполнения. Храненилище,
+текущий адрес и баланс в то же время являются частью вызывающего контракта, из вызываемого адреса берется только 
+исполняемый код.
 
-This makes it possible to implement the "library" feature in Solidity:
-Reusable library code that can be applied to a contract's storage, e.g. in
-order to implement a complex data structure.
+Это делает возможным применение функцию "библиотека" в языке Solidity:
+Многократно используемый библиотечный код, который может быть применен к хранилищу контракта, напрример
+в целях применения сложных структур данных.
 
-.. index:: log
+.. содержание:: логи
 
-Logs
+Логи
 ====
 
-It is possible to store data in a specially indexed data structure
-that maps all the way up to the block level. This feature called **logs**
-is used by Solidity in order to implement :ref:`events <events>`.
-Contracts cannot access log data after it has been created, but they
-can be efficiently accessed from outside the blockchain.
-Since some part of the log data is stored in `bloom filters <https://en.wikipedia.org/wiki/Bloom_filter>`_, it is
-possible to search for this data in an efficient and cryptographically
-secure way, so network peers that do not download the whole blockchain
-(so-called "light clients") can still find these logs.
+Предусмотрена возможность хранить данные в специально индексируемых структурах данных,
+которые адресуют все до уровня блоков. Эта функция называется **logs**(логи)
+и используется Solidity для применения событий:ref:`events <events>`. 
+Контракты не могут получить доступ к данным логов после того, как они были созданы,
+но их можно эффективно получить из-за пределов блокчейн.
+Так как часть данных логов сохранена в фильтре Блума <https://en.wikipedia.org/wiki/Bloom_filter>,
+это позволяет осуществлять поиск в этих данных в эффективном и криптографически защищенном виде,
+и сетевые пиры, которые не загружают весь блокчейн(так называемые "light nodes") могут находить эти логи.
 
-.. index:: contract creation
+.. содержание:: создание контракта
 
-Create
+Создать
 ======
 
-Contracts can even create other contracts using a special opcode (i.e.
-they do not simply call the zero address as a transaction would). The only difference between
-these **create calls** and normal message calls is that the payload data is
-executed and the result stored as code and the caller / creator
-receives the address of the new contract on the stack.
+Контракты даже могут создавать другие контракты с использованием специальных опткодов(например,
+они не просто вызывают нулевой адрес, как сделала бы транзакция). Единственная разница между
+этим **создать вызов** и нормальным вызовом сообщения заключается в том, что данные полезной
+нагрузки выполняются и результат сохранятется, как код и вызвавший/создатель получает в стек адрес нового контракта.
 
-.. index:: selfdestruct, self-destruct, deactivate
+.. содержание:: саморазрушение, само-разрушение и деактивация
 
-Deactivate and Self-destruct
+Деактивация и само-разрушнеие
 ============================
 
-The only way to remove code from the blockchain is when a contract at that
-address performs the ``selfdestruct`` operation. The remaining Ether stored
-at that address is sent to a designated target and then the storage and code
-is removed from the state. Removing the contract in theory sounds like a good
-idea, but it is potentially dangerous, as if someone sends Ether to removed
-contracts, the Ether is forever lost.
+Едиственый способ удалить код из блокчейна, это когда контракт на адресе
+совершает операцию саморазрушения ''selfdestruct''. Оставшийся Эфир сохранен
+на адресе и отправлен на обозначенный адрес и затем хранилище и код удаляются
+из состояния. Удаление контракта в теории звучит, как хорошая идея, но это
+несет в себе потенциальные риски, например, если кто-то отправляет Эфир на
+удаленные контракты, то Эфир будет навсегда потерян.
 
-.. warning::
-    Even if a contract is removed by ``selfdestruct``, it is still part of the
-    history of the blockchain and probably retained by most Ethereum nodes.
-    So using ``selfdestruct`` is not the same as deleting data from a hard disk.
+.. предупреждение::
+    Даже если контракт удален с помощью функции ''srlfdestruct'', он все равно
+    часть истории блоечейна и вероятно сохранен большинством нод Эфириума.
+    Поэтому исползование функции ''selfdestruct'' это не то же самое, что удаление
+    данных с жесткого диска.
 
-.. note::
-    Even if a contract's code does not contain a call to ``selfdestruct``,
-    it can still perform that operation using ``delegatecall`` or ``callcode``.
+.. замечание::
+    Даже если код контракт не содержит вызова ''selfdestruct'',
+    он все равно может выполнить операцию с исползованием делегированного вызова
+    ''delegatedcall'' или ''callcode''(вызов кода)
+Если вы хотите деактивировать ваши контракты, вы должны вместо **отключения** их
+с помощью изменения некоторых внутренних состояний, которые приводят к возврату 
+к изначальному состоянию всех функций. Это делает невозможным использовать контракт,
+и он сразу же возвращает Эфириум.
 
-If you want to deactivate your contracts, you should instead **disable** them
-by changing some internal state which causes all functions to revert. This
-makes it impossible to use the contract, as it returns Ether immediately.
+.. содержание:: ! предварительно скомпилированные контракты, ! прекомпиляция, ! контракт;прекомпилированный
 
+.. _прекомпилированныеКонтракты:
 
-.. index:: ! precompiled contracts, ! precompiles, ! contract;precompiled
-
-.. _precompiledContracts:
-
-Precompiled Contracts
+Предварительно прекомпилированные контракты
 =====================
 
-There is a small set of contract addresses that are special:
-The address range between ``1`` and (including) ``8`` contains
-"precompiled contracts" that can be called as any other contract
-but their behaviour (and their gas consumption) is not defined
-by EVM code stored at that address (they do not contain code)
-but instead is implemented in the EVM execution environment itself.
+Существует небольшой набор адресов контрактов, которые имею особенности:
+Диапазон адресов между ''1'' и (включительно) ''8'' содержат
+"прекомпилированные контракты" которые можно вызвать, как и любые другие
+контракты, но их поведение(и потребление газа) не определено
+виртуальной машиной Эфириума сохраненной на этом адресе(они не содержат кода),
+но вместо этого они применены в среде выполнения виртуальной машины сами по себе.
 
-Different EVM-compatible chains might use a different set of
-precompiled contracts. It might also be possible that new
-precompiled contracts are added to the Ethereum main chain in the future,
-but you can reasonably expect them to always be in the range between
-``1`` and ``0xffff`` (inclusive).
+Разные чейны совместимые с виртуальной машиной Эфириума могут использовать
+различный набор прекомпилированный контрактов. Это также возможно, что новые
+прекомпилированные контракты добавляются в главный чейн Эфириума в будущем,
+но вы можете обоснованно ожидать, что они всегда будут в диапазоне между
+''1'' и ''0xffff''(включительно).
