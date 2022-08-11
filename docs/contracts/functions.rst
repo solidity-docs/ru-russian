@@ -35,10 +35,10 @@ that call them, similar to internal library functions.
 
 .. note::
     Functions defined outside a contract are still always executed
-    in the context of a contract. They still have access to the variable ``this``,
-    can call other contracts, send them Ether and destroy the contract that called them,
+    in the context of a contract.
+    They still can call other contracts, send them Ether and destroy the contract that called them,
     among other things. The main difference to functions defined inside a contract
-    is that free functions do not have direct access to storage variables and functions
+    is that free functions do not have direct access to the variable ``this``, storage variables and functions
     not in their scope.
 
 .. _function-parameters-return-variables:
@@ -74,13 +74,13 @@ Function parameters can be used as any other local variable and they can also be
 
 .. note::
 
-  An :ref:`external function<external-function-calls>` cannot accept a
-  multi-dimensional array as an input
-  parameter. This functionality is possible if you enable the ABI coder v2
-  by adding ``pragma abicoder v2;`` to your source file.
+  Until version 0.6.0 it was not possible to use a multi-dimensional array or a struct
+  as an input for an :ref:`external function<external-function-calls>`.
+  ``abicoder v2`` made it possible and it's been enabled by default since version 0.8.0
+  (before that you had to enable it with ``pragma abicoder v2;``).
 
-  An :ref:`internal function<external-function-calls>` can accept a
-  multi-dimensional array without enabling the feature.
+  An :ref:`internal function<internal-function-calls>` can accept a
+  multi-dimensional array or a struct without any restrictions.
 
 .. index:: return array, return string, array, string, array of strings, dynamic array, variably sized array, return struct, struct
 
