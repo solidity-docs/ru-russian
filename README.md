@@ -1,4 +1,4 @@
-# The Solidity Contract-Oriented Programming Language
+# Солидити контрактно-ориентированный язык программирования
 
 [![Matrix Chat](https://img.shields.io/badge/Matrix%20-chat-brightgreen?style=plastic&logo=matrix)](https://matrix.to/#/#ethereum_solidity:gitter.im)
 [![Gitter Chat](https://img.shields.io/badge/Gitter%20-chat-brightgreen?style=plastic&logo=gitter)](https://gitter.im/ethereum/solidity)
@@ -6,46 +6,42 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/solidity_lang?style=plastic&logo=twitter)](https://twitter.com/solidity_lang)
 [![Mastodon Follow](https://img.shields.io/mastodon/follow/000335908?domain=https%3A%2F%2Ffosstodon.org%2F&logo=mastodon&style=plastic)](https://fosstodon.org/@solidity)
 
-You can talk to us on Gitter and Matrix, tweet at us on Twitter or create a new topic in the Solidity forum. Questions, feedback, and suggestions are welcome!
+Вы можете поговорить с нами в чатах Gitter и Matrix, твитнуть нас в Twitter или создать новый топив на Solidity форум. Мы рады любым вопросам, обратной связи и предложениям! 
 
-Solidity is a statically typed, contract-oriented, high-level language for implementing smart contracts on the Ethereum platform.
+Solidity статично типизированный, контрактно-ориентированный, высокоуровневый язык для реализации смарт-контрактов в среде блокчейна Эфириума.
 
-For a good overview and starting point, please check out the official [Solidity Language Portal](https://soliditylang.org).
+Чтобы с чего-то начать и получить хороший обзор, пожалуйста, проверьте наш официальный сайт [Solidity Language Portal](https://soliditylang.org).
 
-## Table of Contents
+## Содержание
 
-- [Background](#background)
-- [Build and Install](#build-and-install)
-- [Example](#example)
-- [Documentation](#documentation)
-- [Development](#development)
-- [Maintainers](#maintainers)
-- [License](#license)
-- [Security](#security)
+- [Определение](#background)
+- [Сборка и установка](#build-and-install)
+- [Пример](#example)
+- [Документация](#documentation)
+- [Разработка](#development)
+- [Поддержка](#maintainers)
+- [Лицензия](#license)
+- [Безопасность](#security)
 
-## Background
+## Определение
 
-Solidity is a statically-typed curly-braces programming language designed for developing smart contracts
-that run on the Ethereum Virtual Machine. Smart contracts are programs that are executed inside a peer-to-peer
-network where nobody has special authority over the execution, and thus they allow to implement tokens of value,
-ownership, voting, and other kinds of logic.
+Solidity - это статично типизированный фигурно-скобочный язык созданный для разработки смарт контрактов, которые исполняются
+на виртуальной машине Эфириума. Смарт контракты - это программы, которые исполняются внутри пиринговой сети, где ни у кого нет
+исключительного права на исполнение, и таким образом контракты позволяют создавать токены стоимости, владения, голосования и других
+типов логики.
 
-When deploying contracts, you should use the latest released version of
-Solidity. This is because breaking changes, as well as new features and bug fixes are
-introduced regularly. We currently use a 0.x version
-number [to indicate this fast pace of change](https://semver.org/#spec-item-4).
+Во время деплоя контрактов, вы должны использовать последнюю релизную версию Солидити, потому что критические изменения, так же как и новые функции и фиксы выпускаются регулярно. Мы в данный момент используем нумерацию версий типа 0.x [чтобы отразить высокую скорость изменений](https://semver.org/#spec-item-4)
 
-## Build and Install
+## Сборка и установка
 
-Instructions about how to build and install the Solidity compiler can be
-found in the [Solidity documentation](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source).
+Инструкции о том, как собрать и установить компилятор Солидити можно найти в документации [Solidity documentation](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source).
 
 
-## Example
+## Пример
 
-A "Hello World" program in Solidity is of even less use than in other languages, but still:
+Простейшая программа "Привет мир" на языке Солидити еще более бесполезна, чем на других языках, но тем не менее:
 
-```solidity
+```солидити
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0 <0.9.0;
 
@@ -56,37 +52,34 @@ contract HelloWorld {
 }
 ```
 
-To get started with Solidity, you can use [Remix](https://remix.ethereum.org/), which is a
-browser-based IDE. Here are some example contracts:
+Для того, чтобы начать работу с Солидити, вы можете использовать [Remix](https://remix.ethereum.org/), который
+представляет собой браузерную интегрированную среду разработки. Ниже приведено несколько примеров контрактов:
 
-1. [Voting](https://docs.soliditylang.org/en/latest/solidity-by-example.html#voting)
-2. [Blind Auction](https://docs.soliditylang.org/en/latest/solidity-by-example.html#blind-auction)
-3. [Safe remote purchase](https://docs.soliditylang.org/en/latest/solidity-by-example.html#safe-remote-purchase)
-4. [Micropayment Channel](https://docs.soliditylang.org/en/latest/solidity-by-example.html#micropayment-channel)
+1. [Голосование](https://docs.soliditylang.org/en/latest/solidity-by-example.html#voting)
+2. [Слепой аукцион](https://docs.soliditylang.org/en/latest/solidity-by-example.html#blind-auction)
+3. [Безопасная удаленная покупка](https://docs.soliditylang.org/en/latest/solidity-by-example.html#safe-remote-purchase)
+4. [Канал микроплатежей](https://docs.soliditylang.org/en/latest/solidity-by-example.html#micropayment-channel)
 
-## Documentation
+## Документация
 
-The Solidity documentation is hosted at [Read the docs](https://docs.soliditylang.org).
+Документация Солидити размещена по адресу: [Read the docs](https://docs.soliditylang.org).
 
-## Development
+## Разработка
 
-Solidity is still under development. Contributions are always welcome!
-Please follow the
-[Developers Guide](https://docs.soliditylang.org/en/latest/contributing.html)
-if you want to help.
+Солидити все еще в процессе разработки. Любая помощь приветствуется! 
+Пожалуйста изучите [Гид разработчика] [Developers Guide](https://docs.soliditylang.org/en/latest/contributing.html),
+если вы хотите помочь.
 
-You can find our current feature and bug priorities for forthcoming
-releases in the [projects section](https://github.com/ethereum/solidity/projects).
+Вы можете найти наш текущие приоритеты по ошибкам и функциям для предстоящих релизов в разделе проектов: [projects section](https://github.com/ethereum/solidity/projects).
 
-## Maintainers
+## Поддержка
 * [@axic](https://github.com/axic)
 * [@chriseth](https://github.com/chriseth)
 
-## License
-Solidity is licensed under [GNU General Public License v3.0](LICENSE.txt).
+## Лицензия
+Солидити лицензирован на следующих условиях [GNU General Public License v3.0](LICENSE.txt).
 
-Some third-party code has its [own licensing terms](cmake/templates/license.h.in).
+Часть третье-стороннего кода имеет собственные условия лицензирования[own licensing terms](cmake/templates/license.h.in).
 
-## Security
+## Безопасность
 
-The security policy may be [found here](SECURITY.md).
