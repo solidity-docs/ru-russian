@@ -79,7 +79,8 @@ contract HelloWorld {
 ## Лицензия
 Солидити лицензирован на следующих условиях [GNU General Public License v3.0](LICENSE.txt).
 
-Часть третье-стороннего кода имеет собственные условия лицензирования[own licensing terms](cmake/templates/license.h.in).
+Часть третье-стороннего кода имеет собственные условия лицензирования [own licensing terms](cmake/templates/license.h.in).
 
 ## Безопасность
 
+Политику безопасности можно найти здесь[found here](SECURITY.md).
