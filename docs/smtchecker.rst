@@ -614,20 +614,25 @@ which is primarily an SMT solver and makes `Spacer
 <https://github.com/uuverifiers/eldarica>`_ which does both.
 
 The user can choose which solvers should be used, if available, via the CLI
-option ``--model-checker-solvers {all,cvc4,smtlib2,z3}`` or the JSON option
+option ``--model-checker-solvers {all,cvc4,eld,smtlib2,z3}`` or the JSON option
 ``settings.modelChecker.solvers=[smtlib2,z3]``, where:
 
 - ``cvc4`` is only available if the ``solc`` binary is compiled with it. Only BMC uses ``cvc4``.
+- ``eld`` is used via its binary which must be installed in the system. Only CHC uses ``eld``, and only if ``z3`` is not enabled.
 - ``smtlib2`` outputs SMT/Horn queries in the `smtlib2 <http://smtlib.cs.uiowa.edu/>`_ format.
   These can be used together with the compiler's `callback mechanism <https://github.com/ethereum/solc-js>`_ so that
   any solver binary from the system can be employed to synchronously return the results of the queries to the compiler.
-  This is currently the only way to use Eldarica, for example, since it does not have a C++ API.
   This can be used by both BMC and CHC depending on which solvers are called.
 - ``z3`` is available
 
   - if ``solc`` is compiled with it;
-  - if a dynamic ``z3`` library of version 4.8.x is installed in a Linux system (from Solidity 0.7.6);
+  - if a dynamic ``z3`` library of version >=4.8.x is installed in a Linux system (from Solidity 0.7.6);
   - statically in ``soljson.js`` (from Solidity 0.6.9), that is, the Javascript binary of the compiler.
+
+.. note::
+  z3 version 4.8.16 broke ABI compatibility with previous versions and cannot
+  be used with solc <=0.8.13. If you are using z3 >=4.8.16 please use solc
+  >=0.8.14.
 
 Since both BMC and CHC use ``z3``, and ``z3`` is available in a greater variety
 of environments, including in the browser, most users will almost never need to be
@@ -679,7 +684,7 @@ Types that are not yet supported are abstracted by a single 256-bit unsigned
 integer, where their unsupported operations are ignored.
 
 For more details on how the SMT encoding works internally, see the paper
-`SMT-based Verification of Solidity Smart Contracts <https://github.com/leonardoalt/text/blob/master/solidity_isola_2018/main.pdf>`_.
+`SMT-based Verification of Solidity Smart Contracts <https://github.com/chriseth/solidity_isola/blob/master/main.pdf>`_.
 
 Function Calls
 ==============
