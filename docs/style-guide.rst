@@ -17,11 +17,11 @@ conflicts, project specific style guides take precedence.
 
 The structure and many of the recommendations within this style guide were
 taken from python's
-`pep8 style guide <https://www.python.org/dev/peps/pep-0008/>`_.
+`pep8 style guide <https://peps.python.org/pep-0008/>`_.
 
 The goal of this guide is *not* to be the right way or the best way to write
 Solidity code.  The goal of this guide is *consistency*.  A quote from python's
-`pep8 <https://www.python.org/dev/peps/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds>`_
+`pep8 <https://peps.python.org/pep-0008/#a-foolish-consistency-is-the-hobgoblin-of-little-minds>`_
 captures this concept well.
 
 .. note::
@@ -146,8 +146,7 @@ No:
 Maximum Line Length
 ===================
 
-Keeping lines under the `PEP 8 recommendation <https://www.python.org/dev/peps/pep-0008/#maximum-line-length>`_ to a maximum of 79 (or 99)
-characters helps readers easily parse the code.
+Maximum suggested line length is 120 characters.
 
 Wrapped lines should conform to the following guidelines.
 
@@ -1059,13 +1058,39 @@ Inside each contract, library or interface, use the following order:
 1. Type declarations
 2. State variables
 3. Events
-4. Modifiers
-5. Functions
+4. Errors
+5. Modifiers
+6. Functions
 
 .. note::
 
     It might be clearer to declare types close to their use in events or state
     variables.
+
+Yes:
+
+.. code-block:: solidity
+
+    // SPDX-License-Identifier: GPL-3.0
+    pragma solidity >=0.8.4 <0.9.0;
+
+    abstract contract Math {
+        error DivideByZero();
+        function divide(int256 numerator, int256 denominator) public virtual returns (uint256);
+    }
+
+No:
+
+.. code-block:: solidity
+
+    // SPDX-License-Identifier: GPL-3.0
+    pragma solidity >=0.8.4 <0.9.0;
+
+    abstract contract Math {
+        function divide(int256 numerator, int256 denominator) public virtual returns (uint256);
+        error DivideByZero();
+    }
+
 
 ******************
 Naming Conventions
@@ -1131,13 +1156,13 @@ Yes:
     contract Owned {
         address public owner;
 
-        constructor() {
-            owner = msg.sender;
-        }
-
         modifier onlyOwner {
             require(msg.sender == owner);
             _;
+        }
+
+        constructor() {
+            owner = msg.sender;
         }
 
         function transferOwnership(address newOwner) public onlyOwner {
@@ -1170,13 +1195,13 @@ No:
     contract owned {
         address public owner;
 
-        constructor() {
-            owner = msg.sender;
-        }
-
         modifier onlyOwner {
             require(msg.sender == owner);
             _;
+        }
+
+        constructor() {
+            owner = msg.sender;
         }
 
         function transferOwnership(address newOwner) public onlyOwner {
@@ -1256,8 +1281,8 @@ Avoiding Naming Collisions
 
 * ``singleTrailingUnderscore_``
 
-This convention is suggested when the desired name collides with that of a
-built-in or otherwise reserved name.
+This convention is suggested when the desired name collides with that of
+an existing state variable, function, built-in or otherwise reserved name.
 
 .. _style_guide_natspec:
 
