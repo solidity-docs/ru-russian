@@ -210,22 +210,25 @@ an exception to this rule.
     declare its type as ``address payable`` to make this requirement visible. Also,
     try to make this distinction or conversion as early as possible.
 
+    The distinction between ``address`` and ``address payable`` was introduced with version 0.5.0.
+    Also starting from that version, contracts are not implicitly convertible to the ``address`` type, but can still be explicitly converted to
+    ``address`` or to ``address payable``, if they have a receive or payable fallback function.
+
+
 Operators:
 
 * ``<=``, ``<``, ``==``, ``!=``, ``>=`` and ``>``
 
 .. warning::
     If you convert a type that uses a larger byte size to an ``address``, for example ``bytes32``, then the ``address`` is truncated.
-    To reduce conversion ambiguity version 0.4.24 and higher of the compiler force you make the truncation explicit in the conversion.
+    To reduce conversion ambiguity, starting with version 0.4.24, the compiler will force you to make the truncation explicit in the conversion.
     Take for example the 32-byte value ``0x111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFFCCCC``.
 
     You can use ``address(uint160(bytes20(b)))``, which results in ``0x111122223333444455556666777788889999aAaa``,
     or you can use ``address(uint160(uint256(b)))``, which results in ``0x777788889999AaAAbBbbCcccddDdeeeEfFFfCcCc``.
 
 .. note::
-    The distinction between ``address`` and ``address payable`` was introduced with version 0.5.0.
-    Also starting from that version, contracts do not derive from the address type, but can still be explicitly converted to
-    ``address`` or to ``address payable``, if they have a receive or payable fallback function.
+    Mixed-case hexadecimal numbers conforming to `EIP-55 <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md>`_ are automatically treated as literals of the ``address`` type. See :ref:`Address Literals<address_literals>`.
 
 .. _members-of-addresses:
 
@@ -333,7 +336,7 @@ on ``call``.
 * ``code`` and ``codehash``
 
 You can query the deployed code for any smart contract. Use ``.code`` to get the EVM bytecode as a
-``bytes memory``, which might be empty. Use ``.codehash`` get the Keccak-256 hash of that code
+``bytes memory``, which might be empty. Use ``.codehash`` to get the Keccak-256 hash of that code
 (as a ``bytes32``). Note that ``addr.codehash`` is cheaper than using ``keccak256(addr.code)``.
 
 .. note::
@@ -448,8 +451,8 @@ Integer literals are formed from a sequence of digits in the range 0-9.
 They are interpreted as decimals. For example, ``69`` means sixty nine.
 Octal literals do not exist in Solidity and leading zeros are invalid.
 
-Decimal fractional literals are formed by a ``.`` with at least one number on
-one side.  Examples include ``1.``, ``.1`` and ``1.3``.
+Decimal fractional literals are formed by a ``.`` with at least one number after the decimal point.
+Examples include ``.1`` and ``1.3`` (but not ``1.``).
 
 Scientific notation in the form of ``2e10`` is also supported, where the
 mantissa can be fractional but the exponent has to be an integer.
@@ -661,7 +664,7 @@ introduced type and ``V`` has to be a built-in value type (the "underlying type"
 ``C.wrap`` is used to convert from the underlying type to the custom type. Similarly, the
 function ``C.unwrap`` is used to convert from the custom type to the underlying type.
 
-The type ``C`` does not have any operators or bound member functions. In particular, even the
+The type ``C`` does not have any operators or attached member functions. In particular, even the
 operator ``==`` is not defined. Explicit and implicit conversions to and from other types are
 disallowed.
 
@@ -767,6 +770,16 @@ confusing, but in essence, if a function is ``payable``, this means that it
 also accepts a payment of zero Ether, so it also is ``non-payable``.
 On the other hand, a ``non-payable`` function will reject Ether sent to it,
 so ``non-payable`` functions cannot be converted to ``payable`` functions.
+To clarify, rejecting ether is more restrictive than not rejecting ether.
+This means you can override a payable function with a non-payable but not the
+other way around.
+
+Additionally, When you define a ``non-payable`` function pointer,
+the compiler does not enforce that the pointed function will actually reject ether.
+Instead, it enforces that the function pointer is never used to send ether.
+Which makes it possible to assign a ``payable`` function pointer to a ``non-payable``
+function pointer ensuring both types behave the same way, i.e, both cannot be used
+to send ether.
 
 If a function type variable is not initialised, calling it results
 in a :ref:`Panic error<assert-and-require>`. The same happens if you call a function after using ``delete``
@@ -786,6 +799,18 @@ This includes private, internal and public functions of both contracts and libra
 functions.
 External function types, on the other hand, are only compatible with public and external contract
 functions.
+
+.. note::
+    External functions with ``calldata`` parameters are incompatible with external function types with ``calldata`` parameters.
+    They are compatible with the corresponding types with ``memory`` parameters instead.
+    For example, there is no function that can be pointed at by a value of type ``function (string calldata) external`` while
+    ``function (string memory) external`` can point at both ``function f(string memory) external {}`` and
+    ``function g(string calldata) external {}``.
+    This is because for both locations the arguments are passed to the function in the same way.
+    The caller cannot pass its calldata directly to an external function and always ABI-encodes the arguments into memory.
+    Marking the parameters as ``calldata`` only affects the implementation of the external function and is
+    meaningless in a function pointer on the caller's side.
+
 Libraries are excluded because they require a ``delegatecall`` and use :ref:`a different ABI
 convention for their selectors <library-selectors>`.
 Functions declared in interfaces do not have definitions so pointing at them does not make sense either.
