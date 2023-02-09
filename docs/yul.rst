@@ -9,13 +9,9 @@ Yul
 Yul (previously also called JULIA or IULIA) is an intermediate language that can be
 compiled to bytecode for different backends.
 
-Support for EVM 1.0, EVM 1.5 and Ewasm is planned, and it is designed to
-be a usable common denominator of all three
-platforms. It can already be used in stand-alone mode and
-for "inline assembly" inside Solidity
-and there is an experimental implementation of the Solidity compiler
-that uses Yul as an intermediate language. Yul is a good target for
-high-level optimisation stages that can benefit all target platforms equally.
+It can be used in stand-alone mode and for "inline assembly" inside Solidity.
+The compiler uses Yul as an intermediate language in the IR-based code generator ("new codegen" or "IR-based codegen").
+Yul is a good target for high-level optimisation stages that can benefit all target platforms equally.
 
 Motivation and High-level Description
 =====================================
@@ -663,10 +659,10 @@ We will use a destructuring notation for the AST nodes.
     E(G, L, <var_1, ..., var_n := rhs>: Assignment) =
         let G1, L1, v1, ..., vn = E(G, L, rhs)
         let L2 be a copy of L1 where L2[$var_i] = vi for i = 1, ..., n
-        G, L2, regular
+        G1, L2, regular
     E(G, L, <for { i1, ..., in } condition post body>: ForLoop) =
         if n >= 1:
-            let G1, L, mode = E(G, L, i1, ..., in)
+            let G1, L1, mode = E(G, L, i1, ..., in)
             // mode has to be regular or leave due to the syntactic restrictions
             if mode is leave then
                 G1, L1 restricted to variables of L, leave
@@ -686,7 +682,7 @@ We will use a destructuring notation for the AST nodes.
                 else:
                     G3, L3, mode = E(G2, L2, post)
                     if mode is leave:
-                        G2, L3, leave
+                        G3, L3, leave
                     otherwise
                         E(G3, L3, for {} condition post body)
     E(G, L, break: BreakContinue) =
@@ -755,8 +751,8 @@ This document does not want to be a full description of the Ethereum virtual mac
 Please refer to a different document if you are interested in the precise semantics.
 
 Opcodes marked with ``-`` do not return a result and all others return exactly one value.
-Opcodes marked with ``F``, ``H``, ``B``, ``C``, ``I`` and ``L`` are present since Frontier, Homestead,
-Byzantium, Constantinople, Istanbul or London respectively.
+Opcodes marked with ``F``, ``H``, ``B``, ``C``, ``I``, ``L`` and ``P`` are present since Frontier,
+Homestead, Byzantium, Constantinople, Istanbul, London or Paris respectively.
 
 In the following, ``mem[a...b)`` signifies the bytes of memory starting at position ``a`` up to
 but not including position ``b`` and ``storage[p]`` signifies the storage contents at slot ``p``.
@@ -903,6 +899,7 @@ the ``dup`` and ``swap`` instructions as well as ``jump`` instructions, labels a
 | revert(p, s)            | `-` | B | end execution, revert state changes, return data mem[p...(p+s)) |
 +-------------------------+-----+---+-----------------------------------------------------------------+
 | selfdestruct(a)         | `-` | F | end execution, destroy current contract and send funds to a     |
+|                         |     |   | (deprecated)                                                    |
 +-------------------------+-----+---+-----------------------------------------------------------------+
 | invalid()               | `-` | F | end execution with invalid instruction                          |
 +-------------------------+-----+---+-----------------------------------------------------------------+
@@ -933,7 +930,9 @@ the ``dup`` and ``swap`` instructions as well as ``jump`` instructions, labels a
 +-------------------------+-----+---+-----------------------------------------------------------------+
 | number()                |     | F | current block number                                            |
 +-------------------------+-----+---+-----------------------------------------------------------------+
-| difficulty()            |     | F | difficulty of the current block                                 |
+| difficulty()            |     | F | difficulty of the current block (see note below)                |
++-------------------------+-----+---+-----------------------------------------------------------------+
+| prevrandao()            |     | P | randomness provided by the beacon chain (see note below)        |
 +-------------------------+-----+---+-----------------------------------------------------------------+
 | gaslimit()              |     | F | block gas limit of the current block                            |
 +-------------------------+-----+---+-----------------------------------------------------------------+
@@ -948,6 +947,20 @@ the ``dup`` and ``swap`` instructions as well as ``jump`` instructions, labels a
   You need to use the ``returndatasize`` opcode to check which part of this memory area contains the return data.
   The remaining bytes will retain their values as of before the call.
 
+.. note::
+  The `difficulty()` instruction is disallowed in EVM version >= Paris.
+  With the Paris network upgrade the semantics of the instruction that was previously called
+  ``difficulty`` have been changed and the instruction was renamed to ``prevrandao``.
+  It can now return arbitrary values in the full 256-bit range, whereas the highest recorded
+  difficulty value within Ethash was ~54 bits.
+  This change is described in `EIP-4399 <https://eips.ethereum.org/EIPS/eip-4399>`_.
+  Please note that irrelevant to which EVM version is selected in the compiler, the semantics of
+  instructions depend on the final chain of deployment.
+
+.. warning::
+    From version 0.8.18 and up, the use of ``selfdestruct`` in both Solidity and Yul will trigger a
+    deprecation warning, since the ``SELFDESTRUCT`` opcode will eventually undergo breaking changes in behaviour
+    as stated in `EIP-6049 <https://eips.ethereum.org/EIPS/eip-6049>`_.
 
 In some internal dialects, there are additional functions:
 
@@ -1162,6 +1175,7 @@ An example Yul Object is shown below:
         code {
             function allocate(size) -> ptr {
                 ptr := mload(0x40)
+                // Note that Solidity generated IR code reserves memory offset ``0x60`` as well, but a pure Yul object is free to use memory as it chooses.
                 if iszero(ptr) { ptr := 0x60 }
                 mstore(0x40, add(ptr, size))
             }
@@ -1173,7 +1187,7 @@ An example Yul Object is shown below:
             datacopy(offset, dataoffset("Contract2"), size)
             // constructor parameter is a single number 0x1234
             mstore(add(offset, size), 0x1234)
-            pop(create(offset, add(size, 32), 0))
+            pop(create(0, offset, add(size, 32)))
 
             // now return the runtime object (the currently
             // executing code is the constructor code)
@@ -1191,6 +1205,7 @@ An example Yul Object is shown below:
             code {
                 function allocate(size) -> ptr {
                     ptr := mload(0x40)
+                    // Note that Solidity generated IR code reserves memory offset ``0x60`` as well, but a pure Yul object is free to use memory as it chooses.
                     if iszero(ptr) { ptr := 0x60 }
                     mstore(0x40, add(ptr, size))
                 }
@@ -1238,68 +1253,13 @@ and optionally specify the :ref:`expected number of contract executions <optimiz
 
 In Solidity mode, the Yul optimizer is activated together with the regular optimizer.
 
+.. _optimization-step-sequence:
+
 Optimization Step Sequence
 --------------------------
 
-By default the Yul optimizer applies its predefined sequence of optimization steps to the generated assembly.
-You can override this sequence and supply your own using the ``--yul-optimizations`` option:
-
-.. code-block:: sh
-
-    solc --optimize --ir-optimized --yul-optimizations 'dhfoD[xarrscLMcCTU]uljmul'
-
-The order of steps is significant and affects the quality of the output.
-Moreover, applying a step may uncover new optimization opportunities for others that were already
-applied so repeating steps is often beneficial.
-By enclosing part of the sequence in square brackets (``[]``) you tell the optimizer to repeatedly
-apply that part until it no longer improves the size of the resulting assembly.
-You can use brackets multiple times in a single sequence but they cannot be nested.
-
-The following optimization steps are available:
-
-============ ===============================
-Abbreviation Full name
-============ ===============================
-``f``        ``BlockFlattener``
-``l``        ``CircularReferencesPruner``
-``c``        ``CommonSubexpressionEliminator``
-``C``        ``ConditionalSimplifier``
-``U``        ``ConditionalUnsimplifier``
-``n``        ``ControlFlowSimplifier``
-``D``        ``DeadCodeEliminator``
-``v``        ``EquivalentFunctionCombiner``
-``e``        ``ExpressionInliner``
-``j``        ``ExpressionJoiner``
-``s``        ``ExpressionSimplifier``
-``x``        ``ExpressionSplitter``
-``I``        ``ForLoopConditionIntoBody``
-``O``        ``ForLoopConditionOutOfBody``
-``o``        ``ForLoopInitRewriter``
-``i``        ``FullInliner``
-``g``        ``FunctionGrouper``
-``h``        ``FunctionHoister``
-``F``        ``FunctionSpecializer``
-``T``        ``LiteralRematerialiser``
-``L``        ``LoadResolver``
-``M``        ``LoopInvariantCodeMotion``
-``r``        ``RedundantAssignEliminator``
-``R``        ``ReasoningBasedSimplifier`` - highly experimental
-``m``        ``Rematerialiser``
-``V``        ``SSAReverser``
-``a``        ``SSATransform``
-``t``        ``StructuralSimplifier``
-``u``        ``UnusedPruner``
-``p``        ``UnusedFunctionParameterPruner``
-``d``        ``VarDeclInitializer``
-============ ===============================
-
-Some steps depend on properties ensured by ``BlockFlattener``, ``FunctionGrouper``, ``ForLoopInitRewriter``.
-For this reason the Yul optimizer always applies them before applying any steps supplied by the user.
-
-The ReasoningBasedSimplifier is an optimizer step that is currently not enabled
-in the default set of steps. It uses an SMT solver to simplify arithmetic expressions
-and boolean conditions. It has not received thorough testing or validation yet and can produce
-non-reproducible results, so please use with care!
+Detailed information regrading the optimization sequence as well a list of abbreviations is
+available in the :ref:`optimizer docs <optimizer-steps>`.
 
 .. _erc20yul:
 
