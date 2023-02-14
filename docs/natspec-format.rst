@@ -46,7 +46,7 @@ for the purposes of NatSpec.
 
 -  For Vyper, use ``"""`` indented to the inner contents with bare
    comments. See the `Vyper
-   documentation <https://vyper.readthedocs.io/en/latest/natspec.html>`__.
+   documentation <https://docs.vyperlang.org/en/latest/natspec.html>`__.
 
 The following example shows a contract and a function using all available tags.
 
@@ -154,10 +154,6 @@ to the end-user as:
 
 if a function is being called and the input ``a`` is assigned a value of 10.
 
-Specifying these dynamic expressions is outside the scope of the Solidity
-documentation and you may read more at
-`the radspec project <https://github.com/aragon/radspec>`__.
-
 .. _header-inheritance:
 
 Inheritance Notes
@@ -183,7 +179,7 @@ other to be used by the developer.
 If the above contract is saved as ``ex1.sol`` then you can generate the
 documentation using:
 
-.. code::
+.. code-block:: shell
 
    solc --userdoc --devdoc ex1.sol
 
@@ -202,7 +198,7 @@ User Documentation
 The above documentation will produce the following user documentation
 JSON file as output:
 
-.. code::
+.. code-block:: json
 
     {
       "version" : 1,
@@ -230,7 +226,7 @@ Developer Documentation
 Apart from the user documentation file, a developer documentation JSON
 file should also be produced and should look like this:
 
-.. code::
+.. code-block:: json
 
     {
       "version" : 1,
