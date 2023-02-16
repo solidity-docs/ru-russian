@@ -122,8 +122,8 @@ hiding new and different behavior in existing code.
           modifier mod() { _; _; }
       }
 
-  If you execute ``f(0)`` in the old code generator, it will return ``2``, while
-  it will return ``1`` when using the new code generator.
+  If you execute ``f(0)`` in the old code generator, it will return ``1``, while
+  it will return ``0`` when using the new code generator.
 
   .. code-block:: solidity
 
@@ -153,37 +153,6 @@ hiding new and different behavior in existing code.
     its first value.
   - New code generator: ``0`` as all parameters, including return parameters, will be re-initialized before
     each ``_;`` evaluation.
-
-- Copying ``bytes`` arrays from memory to storage is implemented in a different way.
-  The old code generator always copies full words, while the new one cuts the byte
-  array after its end. The old behaviour can lead to dirty data being copied after
-  the end of the array (but still in the same storage slot).
-  This causes differences in some contracts, for example:
-
-  .. code-block:: solidity
-
-      // SPDX-License-Identifier: GPL-3.0
-      pragma solidity >=0.8.1;
-
-      contract C {
-          bytes x;
-          function f() public returns (uint r) {
-              bytes memory m = "tmp";
-              assembly {
-                  mstore(m, 8)
-                  mstore(add(m, 32), "deadbeef15dead")
-              }
-              x = m;
-              assembly {
-                  r := sload(x.slot)
-              }
-          }
-      }
-
-  Previously ``f()`` would return ``0x6465616462656566313564656164000000000000000000000000000000000010``
-  (it has correct length, and correct first 8 elements, but then it contains dirty data which was set via assembly).
-  Now it is returning ``0x6465616462656566000000000000000000000000000000000000000000000010`` (it has
-  correct length, and correct elements, but does not contain superfluous data).
 
   .. index:: ! evaluation order; expression
 
