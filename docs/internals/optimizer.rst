@@ -26,6 +26,10 @@ One can use ``solc --ir-optimized --optimize`` to produce an
 optimized Yul IR for a Solidity source. Similarly, one can use ``solc --strict-assembly --optimize``
 for a stand-alone Yul mode.
 
+.. note::
+    The `peephole optimizer <https://en.wikipedia.org/wiki/Peephole_optimization>`_ and the inliner are always
+    enabled by default and can only be turned off via the :ref:`Standard JSON <compiler-api>`.
+
 You can find more details on both optimizer modules and their optimization steps below.
 
 Benefits of Optimizing Solidity Code
@@ -277,60 +281,86 @@ The following transformation steps are the main components:
 - Redundant Assign Eliminator
 - Full Inliner
 
+.. _optimizer-steps:
+
 Optimizer Steps
 ---------------
 
 This is a list of all steps the Yul-based optimizer sorted alphabetically. You can find more information
 on the individual steps and their sequence below.
 
-- :ref:`block-flattener`.
-- :ref:`circular-reference-pruner`.
-- :ref:`common-subexpression-eliminator`.
-- :ref:`conditional-simplifier`.
-- :ref:`conditional-unsimplifier`.
-- :ref:`control-flow-simplifier`.
-- :ref:`dead-code-eliminator`.
-- :ref:`equal-store-eliminator`.
-- :ref:`equivalent-function-combiner`.
-- :ref:`expression-joiner`.
-- :ref:`expression-simplifier`.
-- :ref:`expression-splitter`.
-- :ref:`for-loop-condition-into-body`.
-- :ref:`for-loop-condition-out-of-body`.
-- :ref:`for-loop-init-rewriter`.
-- :ref:`expression-inliner`.
-- :ref:`full-inliner`.
-- :ref:`function-grouper`.
-- :ref:`function-hoister`.
-- :ref:`function-specializer`.
-- :ref:`literal-rematerialiser`.
-- :ref:`load-resolver`.
-- :ref:`loop-invariant-code-motion`.
-- :ref:`redundant-assign-eliminator`.
-- :ref:`reasoning-based-simplifier`.
-- :ref:`rematerialiser`.
-- :ref:`SSA-reverser`.
-- :ref:`SSA-transform`.
-- :ref:`structural-simplifier`.
-- :ref:`unused-function-parameter-pruner`.
-- :ref:`unused-pruner`.
-- :ref:`var-decl-initializer`.
+============ ===============================
+Abbreviation Full name
+============ ===============================
+``f``        :ref:`block-flattener`
+``l``        :ref:`circular-reference-pruner`
+``c``        :ref:`common-subexpression-eliminator`
+``C``        :ref:`conditional-simplifier`
+``U``        :ref:`conditional-unsimplifier`
+``n``        :ref:`control-flow-simplifier`
+``D``        :ref:`dead-code-eliminator`
+``E``        :ref:`equal-store-eliminator`
+``v``        :ref:`equivalent-function-combiner`
+``e``        :ref:`expression-inliner`
+``j``        :ref:`expression-joiner`
+``s``        :ref:`expression-simplifier`
+``x``        :ref:`expression-splitter`
+``I``        :ref:`for-loop-condition-into-body`
+``O``        :ref:`for-loop-condition-out-of-body`
+``o``        :ref:`for-loop-init-rewriter`
+``i``        :ref:`full-inliner`
+``g``        :ref:`function-grouper`
+``h``        :ref:`function-hoister`
+``F``        :ref:`function-specializer`
+``T``        :ref:`literal-rematerialiser`
+``L``        :ref:`load-resolver`
+``M``        :ref:`loop-invariant-code-motion`
+``r``        :ref:`redundant-assign-eliminator`
+``R``        :ref:`reasoning-based-simplifier` - highly experimental
+``m``        :ref:`rematerialiser`
+``V``        :ref:`SSA-reverser`
+``a``        :ref:`SSA-transform`
+``t``        :ref:`structural-simplifier`
+``p``        :ref:`unused-function-parameter-pruner`
+``S``        :ref:`unused-store-eliminator`
+``u``        :ref:`unused-pruner`
+``d``        :ref:`var-decl-initializer`
+============ ===============================
+
+Some steps depend on properties ensured by ``BlockFlattener``, ``FunctionGrouper``, ``ForLoopInitRewriter``.
+For this reason the Yul optimizer always applies them before applying any steps supplied by the user.
+
+The ReasoningBasedSimplifier is an optimizer step that is currently not enabled
+in the default set of steps. It uses an SMT solver to simplify arithmetic expressions
+and boolean conditions. It has not received thorough testing or validation yet and can produce
+non-reproducible results, so please use with care!
 
 Selecting Optimizations
 -----------------------
 
-By default the optimizer applies its predefined sequence of optimization steps to
-the generated assembly. You can override this sequence and supply your own using
-the ``--yul-optimizations`` option:
+By default the optimizer applies its predefined sequence of optimization steps to the generated assembly.
+You can override this sequence and supply your own using the ``--yul-optimizations`` option:
 
 .. code-block:: bash
 
-    solc --optimize --ir-optimized --yul-optimizations 'dhfoD[xarrscLMcCTU]uljmul'
+    solc --optimize --ir-optimized --yul-optimizations 'dhfoD[xarrscLMcCTU]uljmul:fDnTOc'
+
+The order of steps is significant and affects the quality of the output.
+Moreover, applying a step may uncover new optimization opportunities for others that were already applied,
+so repeating steps is often beneficial.
 
 The sequence inside ``[...]`` will be applied multiple times in a loop until the Yul code
 remains unchanged or until the maximum number of rounds (currently 12) has been reached.
+Brackets (``[]``) may be used multiple times in a sequence, but can not be nested.
 
-Available abbreviations are listed in the `Yul optimizer docs <yul.rst#optimization-step-sequence>`_.
+An important thing to note, is that there are some hardcoded steps that are always run before and after the
+user-supplied sequence, or the default sequence if one was not supplied by the user.
+
+The cleanup sequence delimiter ``:`` is optional, and is used to supply a custom cleanup sequence
+in order to replace the default one. If omitted, the optimizer will simply apply the default cleanup
+sequence. In addition, the delimiter may be placed at the beginning of the user-supplied sequence,
+which will result in the optimization sequence being empty, whereas conversely, if placed at the end of
+the sequence, will be treated as an empty cleanup sequence.
 
 Preprocessing
 -------------
@@ -683,7 +713,7 @@ Conflicting values are resolved in the following way:
 
 - "unused", "undecided" -> "undecided"
 - "unused", "used" -> "used"
-- "undecided, "used" -> "used"
+- "undecided", "used" -> "used"
 
 For for-loops, the condition, body and post-part are visited twice, taking
 the joining control-flow at the condition into account.
@@ -929,7 +959,7 @@ DeadCodeEliminator
 This optimization stage removes unreachable code.
 
 Unreachable code is any code within a block which is preceded by a
-leave, return, invalid, break, continue, selfdestruct or revert.
+leave, return, invalid, break, continue, selfdestruct, revert or by a call to a user-defined function that recurses infinitely.
 
 Function definitions are retained as they might be called by earlier
 code and thus are considered reachable.
@@ -1091,6 +1121,52 @@ Prerequisites: Disambiguator, FunctionHoister, LiteralRematerialiser.
 The step LiteralRematerialiser is not required for correctness. It helps deal with cases such as:
 ``function f(x) -> y { revert(y, y} }`` where the literal ``y`` will be replaced by its value ``0``,
 allowing us to rewrite the function.
+
+.. index:: ! unused store eliminator
+.. _unused-store-eliminator:
+
+UnusedStoreEliminator
+^^^^^^^^^^^^^^^^^^^^^
+
+Optimizer component that removes redundant ``sstore`` and memory store statements.
+In case of an ``sstore``, if all outgoing code paths revert (due to an explicit ``revert()``, ``invalid()``, or infinite recursion) or
+lead to another ``sstore`` for which the optimizer can tell that it will overwrite the first store, the statement will be removed.
+However, if there is a read operation between the initial ``sstore`` and the revert, or the overwriting ``sstore``, the statement
+will not be removed.
+Such read operations include: external calls, user-defined functions with any storage access, and ``sload`` of a slot that cannot be
+proven to differ from the slot written by the initial ``sstore``.
+
+For example, the following code
+
+.. code-block:: yul
+
+    {
+        let c := calldataload(0)
+        sstore(c, 1)
+        if c {
+            sstore(c, 2)
+        }
+        sstore(c, 3)
+    }
+
+will be transformed into the code below after the Unused Store Eliminator step is run
+
+.. code-block:: yul
+
+    {
+        let c := calldataload(0)
+        if c { }
+        sstore(c, 3)
+    }
+
+For memory store operations, things are generally simpler, at least in the outermost yul block as all such
+statements will be removed if they are never read from in any code path.
+At function analysis level, however, the approach is similar to ``sstore``, as we do not know whether the memory location will
+be read once we leave the function's scope, so the statement will be removed only if all code paths lead to a memory overwrite.
+
+Best run in SSA form.
+
+Prerequisites: Disambiguator, ForLoopInitRewriter.
 
 .. _equivalent-function-combiner:
 
