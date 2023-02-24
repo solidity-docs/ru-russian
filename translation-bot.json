@@ -1,0 +1,7 @@
+{
+    "disabled": true,
+    "randomly_assign_maintainers": false,
+    "pr_labels": [
+        "sync-pr"
+    ]
+}
