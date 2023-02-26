@@ -1,5 +1,5 @@
 ##################################
-Expressions and Control Structures
+Выражения и контролирующие структуры
 ##################################
 
 .. index:: ! parameter, parameter;input, parameter;output, function parameter, parameter;function, return variable, variable;return, return
@@ -7,62 +7,55 @@ Expressions and Control Structures
 
 .. index:: if, else, while, do/while, for, break, continue, return, switch, goto
 
-Control Structures
+Контролирующие структуры
 ===================
 
-Most of the control structures known from curly-braces languages are available in Solidity:
+Solidity предоставляет большинство контролирующих структур известных из объектно-ориентированных языков, использующих фигурные скобки:
 
-There is: ``if``, ``else``, ``while``, ``do``, ``for``, ``break``, ``continue``, ``return``, with
-the usual semantics known from C or JavaScript.
+Предоставляются функции с обычными элементами известыми из языков программирования С или JavaScript: 
 
-Solidity also supports exception handling in the form of ``try``/``catch``-statements,
-but only for :ref:`external function calls <external-function-calls>` and
-contract creation calls. Errors can be created using the :ref:`revert statement <revert-statement>`.
+``if``, ``else``, ``while``, ``do``, ``for``, ``break``, ``continue``, ``return``.
 
-Parentheses can *not* be omitted for conditionals, but curly braces can be omitted
-around single-statement bodies.
+Солидити также поддерживает oбработку исключений в форме ``try``/``catch``-операторов,
+но только для :ref:`внешних функций  <external-function-calls>` и контрактов создания вызовов. Ошибки могут быть созданы используя :ref:`revert statement <revert-statement>`.
 
-Note that there is no type conversion from non-boolean to boolean types as
-there is in C and JavaScript, so ``if (1) { ... }`` is *not* valid
-Solidity.
+Скобки не могут быть опущены для условий, но фигурные скобки могут быть пропущены вокруг единого оперативного блока.
+
+Заметье, что конверсия с нелогического типа (non-boolean) на логический (boolean) тип как в языках С и JavaScript тут не существует, поэтому
+``if (1) { ... }`` не работает в Solidity.
 
 .. index:: ! function;call, function;internal, function;external
 
 .. _function-calls:
 
-Function Calls
+Вызов функций
 ==============
 
 .. _internal-function-calls:
 
-Internal Function Calls
+Вызов внутренних функций
 -----------------------
 
-Functions of the current contract can be called directly ("internally"), also recursively, as seen in
-this nonsensical example:
+Функции текущего контракта могут быть вызваны на прямyю, а также рекурсивно, как показано в этом бессмысленном примере:
 
 .. code-block:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
     pragma solidity >=0.4.22 <0.9.0;
 
-    // This will report a warning
+    // Эта функция выдаст предупреждение 
     contract C {
         function g(uint a) public pure returns (uint ret) { return a + f(); }
         function f() internal pure returns (uint ret) { return g(7) + f(); }
     }
 
-These function calls are translated into simple jumps inside the EVM. This has
-the effect that the current memory is not cleared, i.e. passing memory references
-to internally-called functions is very efficient. Only functions of the same
-contract instance can be called internally.
+Эти вызовы функций переводятся в простые прыжки внутри EVM. При этом текущая память сохраняется, делая перенос ссылок на память к внутренним функциям очень эффективным. Только функции одного и того же контракта могуть быть вызванны внутри функции.
 
-You should still avoid excessive recursion, as every internal function call
-uses up at least one stack slot and there are only 1024 slots available.
+Использовать рекурсивы чрезмерно не рекоммендуется, т.к. каждый вызов функции использует как минимум один блок памяти, а всего предоставлено 1024 блоков.
 
 .. _external-function-calls:
 
-External Function Calls
+Вызов внешних функций
 -----------------------
 
 Functions can also be called using the ``this.g(8);`` and ``c.g(2);`` notation, where
