@@ -6,7 +6,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/solidity_lang?style=plastic&logo=twitter)](https://twitter.com/solidity_lang)
 [![Mastodon Follow](https://img.shields.io/mastodon/follow/000335908?domain=https%3A%2F%2Ffosstodon.org%2F&logo=mastodon&style=plastic)](https://fosstodon.org/@solidity)
 
-Вы можете связаться с нами в чатах Gitter и Matrix, упомянуть нас в Twitter или создать новый топик на форуме Solidity. Мы рады любым вопросам, обратной связи и предложениям! 
+Вы можете связаться с нами в чатах Gitter и Matrix, упомянуть нас в Twitter или создать новую тему на форуме Solidity. Мы рады любым вопросам, обратной связи и предложениям! 
 
 Solidity статически типизированный, контрактно-ориентированный, высокоуровневый язык для реализации смарт-контрактов в среде блокчейна Эфириума.
 
